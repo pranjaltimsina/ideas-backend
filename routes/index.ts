@@ -13,6 +13,6 @@ router.get('/', (req: Request , res: Response) => {
 })
 
 router.use('/auth', auth)
-router.use('/idea', ideas)
+router.use('/ideas', ideas)
 
 export default router

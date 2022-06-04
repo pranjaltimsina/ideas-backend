@@ -1,32 +1,20 @@
-import express, { Request, Response, Router } from 'express'
+import express, { NextFunction, Request, Response, Router } from 'express'
+
 import jwt from '../middlewares/jwt'
+import * as ideaController from '../controllers/ideaController'
 
 const router: Router = express.Router()
 
 router.use(jwt)
 
-router.get('/all', (req: Request, res: Response) => {
-  res.status(200).json({
-    ideas: [
-      'idea 1'
-    ]
-  })
-})
+router.get('/', ideaController.getAllIdeas)
 
-router.post('/create', (req: Request, res: Response) => {
+router.post('/', ideaController.createIdea)
 
-})
+router.put('/:ideaId', ideaController.editIdea)
 
-router.post('/edit', (req: Request, res: Response) => {
+router.delete('/:ideaId', ideaController.deleteIdea)
 
-})
-
-router.post('/upvote', (req: Request, res: Response) => {
-
-})
-
-router.post('/downvote', (req: Request, res: Response) => {
-
-})
+router.patch('/:ideaId/vote', ideaController.upvoteIdea)
 
 export default router

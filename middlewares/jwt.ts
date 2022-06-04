@@ -19,7 +19,7 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     jwt.verify(authorization, JWT_SECRET, (err, user) => {
       if (err) {
         return res.status(403).json({
-          error: "Invalid token."
+          error: "Invalid auth token."
         })
       }
 
