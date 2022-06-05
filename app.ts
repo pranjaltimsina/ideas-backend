@@ -9,11 +9,13 @@ const app: Express = express()
 
 app.use(helmet())
 app.disable('x-powered-by')
-app.use(cors({
-  origin: 'http://127.0.0.1:3000',
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true
-}))
+// app.use(cors({
+//   origin: 'http://127.0.0.1:3000',
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//   credentials: true
+// }))
+
+app.use(cors())
 
 app.use(express.json())
 
