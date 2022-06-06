@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import { auth } from 'google-auth-library'
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shh'
