@@ -1,20 +1,15 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 
-import { isObjectIdOrHexString } from 'mongoose'
-
 import Idea from '../models/idea'
 
 const getAllIdeas = async (req: Request, res: Response) => {
-  const ideas = await Idea.find()
-
-  ideas.forEach((idea) => {
-    if (isObjectIdOrHexString(idea._id))
-      console.log(idea._id)
-    else
-      console.log('Not an id')
-  })
-  res.status(501).json({message: "Not implemented"})
+  try {
+    const ideas = await Idea.find().lean()
+    res.status(200).json({ideas: ideas})
+  } catch {
+    res.status(502).json({error: "Could not retrieve ideas from the database."})
+  }
 }
 
 interface reqIdea {
@@ -85,19 +80,19 @@ const createIdea = async (req: Request, res: Response) => {
 }
 
 const editIdea = (req: Request, res: Response) => {
-
+  return res.status(501).json({error: "Not implemented"})
 }
 
 const deleteIdea = (req: Request, res: Response) => {
-
+  return res.status(501).json({error: "Not implemented"})
 }
 
 const upvoteIdea = (req: Request, res: Response) => {
-
+  return res.status(501).json({error: "Not implemented"})
 }
 
 const downvoteIdea = (req: Request, res: Response) => {
-
+  return res.status(501).json({error: "Not implemented"})
 }
 
 export {
