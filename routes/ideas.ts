@@ -15,6 +15,6 @@ router.put('/:ideaId', ideaController.editIdea)
 
 router.delete('/:ideaId', ideaController.deleteIdea)
 
-router.patch('/:ideaId/vote', ideaController.upvoteIdea)
+router.patch('/:ideaId/vote', ideaController.voteIdea)
 
 export default router

@@ -87,19 +87,15 @@ const deleteIdea = (req: Request, res: Response) => {
   return res.status(501).json({error: "Not implemented"})
 }
 
-const upvoteIdea = (req: Request, res: Response) => {
+const voteIdea = (req: Request, res: Response) => {
   return res.status(501).json({error: "Not implemented"})
 }
 
-const downvoteIdea = (req: Request, res: Response) => {
-  return res.status(501).json({error: "Not implemented"})
-}
 
 export {
   getAllIdeas,
   createIdea,
   editIdea,
   deleteIdea,
-  upvoteIdea,
-  downvoteIdea
+  voteIdea
 }
