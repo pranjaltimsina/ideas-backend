@@ -1,28 +1,86 @@
 import { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
+
+import { isObjectIdOrHexString } from 'mongoose'
 
 import Idea from '../models/idea'
 
-const getAllIdeas = (req: Request, res: Response) => {
+const getAllIdeas = async (req: Request, res: Response) => {
+  const ideas = await Idea.find()
 
+  ideas.forEach((idea) => {
+    if (isObjectIdOrHexString(idea._id))
+      console.log(idea._id)
+    else
+      console.log('Not an id')
+  })
+  res.status(501).json({message: "Not implemented"})
 }
 
 interface reqIdea {
   title: string,
-  body: string,
+  description: string,
   tags?: string[],
-  upvotes?: number,
-  downvotes?: number,
+  upvotes?: { voterId: string }[],
+  downvotes?: { voterId: string }[],
   comments ?: any
 }
 
-const createIdea = (req: Request, res: Response) => {
-  const idea: reqIdea = req.body.idea
+const createIdea = async (req: Request, res: Response) => {
+  try {
 
-  console.log(idea)
+    const userId:string =  jwt.decode(req.headers.authorization || '')?.toString() || ''
 
-  res.status(201).json({
-    message: "Successfully created idea."
-  })
+    try {
+
+      const idea: reqIdea = req.body.idea
+
+      if (!idea.title) {
+        return res.status(400).json({error: "Bad request. Title of the idea is missing"})
+      }
+
+      idea.title = idea.title.trim()
+
+      if (!idea.description) {
+        return res.status(400).json({error: "Bad request. Description of the idea is missing"})
+      }
+
+      idea.description = idea.description.trim()
+
+      try {
+        if (idea.tags) {
+          idea.tags.map(tag => {
+            tag.trim().toLowerCase()
+          });
+        }
+      } catch {
+        return res.status(400).json({error: "Bad request. Error parsing idea tags."})
+      }
+
+      idea.downvotes = []
+      idea.upvotes = [{
+        voterId: userId
+      }]
+
+      try {
+        await new Idea({
+          userId: userId,
+          title: idea.title,
+          description: idea.description,
+          upvotes: idea.upvotes,
+          downvotes: idea.downvotes,
+          tags: idea.tags
+        }).save()
+      } catch {
+        return res.status(502).json({error: "Error inserting idea in the database."})
+      }
+      return res.status(200).json({idea: idea, message: 'Looks like an idea was created'})
+    } catch {
+      return res.status(400).json({error: "Bad request. Request body does not have an idea, or the idea is invalid."})
+    }
+  } catch {
+    return res.status(401).json({error: "Unauthorized."})
+  }
 
 }
 

@@ -4,7 +4,11 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema({
   name: String,
-  googleId: String
+  givenName: String,
+  familyName: String,
+  googleId: String,
+  email: String,
+  picture: String
 })
 
 const User = mongoose.model('user', userSchema)

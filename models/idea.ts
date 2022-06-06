@@ -4,14 +4,16 @@ import User from './user'
 const Schema = mongoose.Schema
 
 const ideaSchema = new Schema({
+  userId: String,
   title: String,
   description: String,
   upvotes: [{
-    voter: User,
+    voterId: String,
   }],
   downvotes: [{
-    voter: String
-  }]
+    voterId: String
+  }],
+  tags: [String]
 })
 
 const Idea = mongoose.model('idea', ideaSchema)
