@@ -13,7 +13,8 @@ const ideaSchema = new Schema({
   downvotes: [{
     voterId: String
   }],
-  tags: [String]
+  tags: [String],
+  createdOn: Date
 })
 
 const Idea = mongoose.model('idea', ideaSchema)

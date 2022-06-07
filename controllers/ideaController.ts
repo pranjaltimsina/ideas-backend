@@ -64,7 +64,8 @@ const createIdea = async (req: Request, res: Response) => {
           description: idea.description,
           upvotes: idea.upvotes,
           downvotes: idea.downvotes,
-          tags: idea.tags
+          tags: idea.tags,
+          createdOn: + new Date()
         }).save()
       } catch {
         return res.status(502).json({error: "Error inserting idea in the database."})
