@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import { Document } from 'mongoose'
 
 import Idea from '../models/idea'
 
@@ -58,19 +59,19 @@ const createIdea = async (req: Request, res: Response) => {
       }]
 
       try {
-        await new Idea({
+        const createdIdea = await new Idea({
           userId: userId,
           title: idea.title,
           description: idea.description,
           upvotes: idea.upvotes,
           downvotes: idea.downvotes,
           tags: idea.tags,
-          createdOn: + new Date()
+          createdOn: Date.now()
         }).save()
+        return res.status(200).json({idea: createdIdea, message: 'Looks like an idea was created'})
       } catch {
         return res.status(502).json({error: "Error inserting idea in the database."})
       }
-      return res.status(200).json({idea: idea, message: 'Looks like an idea was created'})
     } catch {
       return res.status(400).json({error: "Bad request. Request body does not have an idea, or the idea is invalid."})
     }
@@ -88,8 +89,63 @@ const deleteIdea = (req: Request, res: Response) => {
   return res.status(501).json({error: "Not implemented"})
 }
 
-const voteIdea = (req: Request, res: Response) => {
-  return res.status(501).json({error: "Not implemented"})
+
+const resetVote = async (userId: string, idea: any) => {
+  // if (!userId) return
+  console.log(idea.upvotes)
+  console.log(`Finding userId ${userId}`)
+}
+
+const voteIdea = async (req: Request, res: Response) => {
+
+  const userId: string = jwt.decode(req.headers.authorization || '')?.toString() || ''
+
+  if (!userId) {
+    res.status(400).json({error: "Bad request. Invalid auth token."})
+  } else {
+    try {
+      const ideaId: string = req.params.ideaId
+      if (!ideaId) {
+        res.status(400).json({error: "Invalid idea ID."})
+      } else {
+        try {
+          const theIdea: Document | null = await Idea.findById(ideaId)
+          // console.log(theIdea)
+          let voteType = req.body.voteType
+          if (typeof voteType === 'string') {
+            voteType = parseInt(voteType)
+          }
+          switch (voteType) {
+            case 0:
+              await resetVote(userId, theIdea)
+              console.log('Removing upvote/downvote')
+              res.status(200).json({message: "Removing upvote/downvote"})
+              break
+
+              case 1:
+              await resetVote(userId, theIdea)
+              console.log('Adding upvote and ? downvote')
+              res.status(200).json({message: "Updating vote count"})
+              break
+
+              case 2:
+              await resetVote(userId, theIdea)
+              console.log('Updating votecount')
+              res.status(200).json({message: "Updating vote count"})
+              break
+
+            default:
+              res.status(400).json({error: "Bad request. Invalid voteType."})
+              break
+          }
+        } catch {
+          res.status(404).json({error: `Idea with id ${ideaId} not found.`})
+        }
+      }
+    } catch {
+      res.status(400).json({ error: "Bad request. Invalid request body" })
+    }
+  }
 }
 
 

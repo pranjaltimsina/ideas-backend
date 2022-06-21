@@ -4,16 +4,38 @@ import User from './user'
 const Schema = mongoose.Schema
 
 const ideaSchema = new Schema({
-  userId: String,
-  title: String,
-  description: String,
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true
+  },
+
+  title: {
+    type: String,
+    required: true
+  },
+
+  description: {
+    type: String,
+    required: true
+  },
+
   upvotes: [{
-    voterId: String,
+    voterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
   }],
+
   downvotes: [{
-    voterId: String
+    voterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
   }],
+
   tags: [String],
+
   createdOn: Date
 })
 
