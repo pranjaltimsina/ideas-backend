@@ -1,9 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import User from './user'
 
 const Schema = mongoose.Schema
 
-const ideaSchema = new Schema({
+interface IIdea {
+  author: Types.ObjectId,
+  title: String,
+  description: String,
+  upvotes: Types.ObjectId[],
+  downvotes: Types.ObjectId[],
+  tags: String[],
+  createdOn: Date
+}
+
+const ideaSchema = new Schema<IIdea>({
   author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
@@ -20,19 +30,9 @@ const ideaSchema = new Schema({
     required: true
   },
 
-  upvotes: [{
-    voterId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
-  }],
+  upvotes: [mongoose.Schema.Types.ObjectId],
 
-  downvotes: [{
-    voterId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true
-    },
-  }],
+  downvotes: [mongoose.Schema.Types.ObjectId],
 
   tags: [String],
 

@@ -22,7 +22,6 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
       googleId: userID
     })
 
-    const newToken: string = jwt.sign(userID, JWT_SECRET)
 
     if (!currentUser) {
       const newUser = await new User({
@@ -38,6 +37,7 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         if (saveErr) {
           res.status(502).json({error: "Could not create user"})
         } else {
+          const newToken: string = jwt.sign(JSON.stringify(savedUser._id).slice(1, -1), JWT_SECRET)
           return res.status(201).json({
             data: savedUser,
             token: newToken
@@ -45,6 +45,7 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         }
       })
     } else {
+      const newToken: string = jwt.sign(JSON.stringify(currentUser._id).slice(1, -1), JWT_SECRET)
       return res.status(200).json({data: currentUser, token: newToken})
     }
   } catch (err) {

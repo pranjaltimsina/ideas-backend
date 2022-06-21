@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import { Document } from 'mongoose'
+import mongoose, { Document, isValidObjectId } from 'mongoose'
 
 import Idea from '../models/idea'
 
@@ -17,8 +17,8 @@ interface reqIdea {
   title: string,
   description: string,
   tags?: string[],
-  upvotes?: { voterId: string }[],
-  downvotes?: { voterId: string }[],
+  upvotes?: any,
+  downvotes?: any,
   comments ?: any
 }
 
@@ -26,7 +26,7 @@ const createIdea = async (req: Request, res: Response) => {
   try {
 
     const userId:string =  jwt.decode(req.headers.authorization || '')?.toString() || ''
-
+    const userObjectId = new mongoose.Types.ObjectId(userId)
     try {
 
       const idea: reqIdea = req.body.idea
@@ -54,13 +54,11 @@ const createIdea = async (req: Request, res: Response) => {
       }
 
       idea.downvotes = []
-      idea.upvotes = [{
-        voterId: userId
-      }]
+      idea.upvotes = [userObjectId]
 
       try {
         const createdIdea = await new Idea({
-          userId: userId,
+          author: userObjectId,
           title: idea.title,
           description: idea.description,
           upvotes: idea.upvotes,
@@ -90,55 +88,78 @@ const deleteIdea = (req: Request, res: Response) => {
 }
 
 
-const resetVote = async (userId: string, idea: any) => {
-  // if (!userId) return
-  console.log(idea.upvotes)
-  console.log(`Finding userId ${userId}`)
+const resetVote = async (mongoUserId: mongoose.Types.ObjectId, mongoIdeaId: mongoose.Types.ObjectId) => {
+  return await Idea.updateOne({ _id: mongoIdeaId}, {
+    $pull: {
+      upvotes: mongoUserId,
+      downvotes: mongoUserId
+    }
+  })
 }
 
 const voteIdea = async (req: Request, res: Response) => {
 
   const userId: string = jwt.decode(req.headers.authorization || '')?.toString() || ''
 
-  if (!userId) {
+  if (!mongoose.isValidObjectId(userId)) {
     res.status(400).json({error: "Bad request. Invalid auth token."})
   } else {
+    const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
     try {
       const ideaId: string = req.params.ideaId
-      if (!ideaId) {
-        res.status(400).json({error: "Invalid idea ID."})
+
+      if (!mongoose.isValidObjectId(ideaId)) {
+        res.status(400).json({error: "Invalid idea Id."})
       } else {
+        const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
         try {
-          const theIdea: Document | null = await Idea.findById(ideaId)
-          // console.log(theIdea)
           let voteType = req.body.voteType
           if (typeof voteType === 'string') {
             voteType = parseInt(voteType)
           }
+          let result
+          let theIdea: Document | null
           switch (voteType) {
             case 0:
-              await resetVote(userId, theIdea)
-              console.log('Removing upvote/downvote')
-              res.status(200).json({message: "Removing upvote/downvote"})
+              result = await resetVote(mongoUserId, mongoIdeaId)
+              console.log(result)
+              theIdea = await Idea.findById(mongoIdeaId)
+              res.status(200).json({message: "Removed upvote/downvote", idea: theIdea})
               break
 
-              case 1:
-              await resetVote(userId, theIdea)
-              console.log('Adding upvote and ? downvote')
-              res.status(200).json({message: "Updating vote count"})
+            case 1:
+              result = await resetVote(mongoUserId, mongoIdeaId)
+              console.log(result)
+              result = await Idea.updateOne({ _id: mongoIdeaId}, {
+                $push: {
+                  upvotes: mongoUserId,
+                }
+              })
+              console.log(result)
+              theIdea = await Idea.findById(mongoIdeaId)
+              res.status(200).json({message: "Added upvote", idea: theIdea})
               break
 
-              case 2:
-              await resetVote(userId, theIdea)
-              console.log('Updating votecount')
-              res.status(200).json({message: "Updating vote count"})
+            case 2:
+              result = await resetVote(mongoUserId, mongoIdeaId)
+              console.log(result)
+              result = await Idea.updateOne({ _id: mongoIdeaId}, {
+                $push: {
+                  downvotes: mongoUserId,
+                }
+              })
+              console.log(result)
+              theIdea = await Idea.findById(mongoIdeaId)
+              console.log(theIdea)
+              res.status(200).json({message: "Added downvote", idea: theIdea})
               break
 
             default:
               res.status(400).json({error: "Bad request. Invalid voteType."})
               break
           }
-        } catch {
+        } catch (err) {
+          console.log(err)
           res.status(404).json({error: `Idea with id ${ideaId} not found.`})
         }
       }
@@ -147,7 +168,6 @@ const voteIdea = async (req: Request, res: Response) => {
     }
   }
 }
-
 
 export {
   getAllIdeas,
