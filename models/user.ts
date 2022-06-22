@@ -1,15 +1,8 @@
 import mongoose from 'mongoose'
+import { IUser } from '../types/types'
 
 const Schema = mongoose.Schema
 
-interface IUser {
-  name: String,
-  givenName: String,
-  familyName: String,
-  googleId: String,
-  email: String,
-  picture: String
-}
 
 const userSchema = new Schema<IUser>({
   name: {

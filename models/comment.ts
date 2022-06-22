@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import { IComment } from '../types/types'
 
-const commentSchema = new mongoose.Schema({
+const commentSchema = new mongoose.Schema<IComment>({
   ideaId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'idea',

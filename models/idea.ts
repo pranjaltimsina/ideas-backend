@@ -1,17 +1,7 @@
 import mongoose, { Types } from 'mongoose'
-import User from './user'
+import { IIdea } from '../types/types'
 
 const Schema = mongoose.Schema
-
-interface IIdea {
-  author: Types.ObjectId,
-  title: String,
-  description: String,
-  upvotes: Types.ObjectId[],
-  downvotes: Types.ObjectId[],
-  tags: String[],
-  createdOn: Date
-}
 
 const ideaSchema = new Schema<IIdea>({
   author: {

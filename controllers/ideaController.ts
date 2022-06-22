@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import mongoose, { Document, isValidObjectId } from 'mongoose'
+import mongoose,  { isValidObjectId } from 'mongoose'
 
 import Idea from '../models/idea'
+import { IIdea } from '../types/types'
 
 const getAllIdeas = async (req: Request, res: Response) => {
   try {
@@ -25,7 +26,7 @@ interface reqIdea {
 const createIdea = async (req: Request, res: Response) => {
   try {
 
-    const userId:string =  jwt.decode(req.headers.authorization || '')?.toString() || ''
+    const userId:string =  jwt.decode(res.locals.authorization || '')?.toString() || ''
     const userObjectId = new mongoose.Types.ObjectId(userId)
     try {
 
@@ -83,8 +84,43 @@ const editIdea = (req: Request, res: Response) => {
   return res.status(501).json({error: "Not implemented"})
 }
 
-const deleteIdea = (req: Request, res: Response) => {
-  return res.status(501).json({error: "Not implemented"})
+const deleteIdea = async (req: Request, res: Response) => {
+  // get user id
+  const userId: string = jwt.decode(res.locals.authorization || '')?.toString() || ''
+  if (!mongoose.isValidObjectId(userId)) {
+    res.status(400).json({error: "Bad request. Invalid auth token."})
+  } else {
+    const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
+    try {
+      const ideaId: string = req.params.ideaId
+
+      if (!mongoose.isValidObjectId(ideaId)) {
+        res.status(400).json({error: "Invalid idea Id."})
+      } else {
+        const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
+        // check if idea id and user id is the same
+        const theIdea: IIdea | null  = await Idea.findById(mongoIdeaId)
+        if (!theIdea) {
+          res.status(404).json({error: `Idea with ideaId ${mongoIdeaId} not found.`})
+        } else {
+          console.log(theIdea.author)
+          console.log(mongoUserId)
+          if (mongoUserId.equals(theIdea.author)) {
+            try {
+              await Idea.deleteOne({_id: mongoIdeaId})
+              res.status(200).json({message: 'Deleted Idea'})
+            } catch {
+              res.status(500).json({error: 'Could not delete Idea.'})
+            }
+          } else {
+            res.status(401).json({error: 'Unauthorized.'})
+          }
+        }
+      }
+    } catch {
+      res.status(500).json({error: "Unable to fulfill request due to some error"})
+    }
+  }
 }
 
 
@@ -99,7 +135,7 @@ const resetVote = async (mongoUserId: mongoose.Types.ObjectId, mongoIdeaId: mong
 
 const voteIdea = async (req: Request, res: Response) => {
 
-  const userId: string = jwt.decode(req.headers.authorization || '')?.toString() || ''
+  const userId: string = jwt.decode(res.locals.authorization || '')?.toString() || ''
 
   if (!mongoose.isValidObjectId(userId)) {
     res.status(400).json({error: "Bad request. Invalid auth token."})
@@ -118,7 +154,7 @@ const voteIdea = async (req: Request, res: Response) => {
             voteType = parseInt(voteType)
           }
           let result
-          let theIdea: Document | null
+          let theIdea: IIdea | null
           switch (voteType) {
             case 0:
               result = await resetVote(mongoUserId, mongoIdeaId)
