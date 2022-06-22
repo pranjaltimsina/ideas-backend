@@ -103,8 +103,6 @@ const deleteIdea = async (req: Request, res: Response) => {
         if (!theIdea) {
           res.status(404).json({error: `Idea with ideaId ${mongoIdeaId} not found.`})
         } else {
-          console.log(theIdea.author)
-          console.log(mongoUserId)
           if (mongoUserId.equals(theIdea.author)) {
             try {
               await Idea.deleteOne({_id: mongoIdeaId})
@@ -153,40 +151,33 @@ const voteIdea = async (req: Request, res: Response) => {
           if (typeof voteType === 'string') {
             voteType = parseInt(voteType)
           }
-          let result
           let theIdea: IIdea | null
           switch (voteType) {
             case 0:
-              result = await resetVote(mongoUserId, mongoIdeaId)
-              console.log(result)
+              await resetVote(mongoUserId, mongoIdeaId)
               theIdea = await Idea.findById(mongoIdeaId)
               res.status(200).json({message: "Removed upvote/downvote", idea: theIdea})
               break
 
             case 1:
-              result = await resetVote(mongoUserId, mongoIdeaId)
-              console.log(result)
-              result = await Idea.updateOne({ _id: mongoIdeaId}, {
+              await resetVote(mongoUserId, mongoIdeaId)
+              await Idea.updateOne({ _id: mongoIdeaId}, {
                 $push: {
                   upvotes: mongoUserId,
                 }
               })
-              console.log(result)
               theIdea = await Idea.findById(mongoIdeaId)
               res.status(200).json({message: "Added upvote", idea: theIdea})
               break
 
             case 2:
-              result = await resetVote(mongoUserId, mongoIdeaId)
-              console.log(result)
-              result = await Idea.updateOne({ _id: mongoIdeaId}, {
+              await resetVote(mongoUserId, mongoIdeaId)
+              await Idea.updateOne({ _id: mongoIdeaId}, {
                 $push: {
                   downvotes: mongoUserId,
                 }
               })
-              console.log(result)
               theIdea = await Idea.findById(mongoIdeaId)
-              console.log(theIdea)
               res.status(200).json({message: "Added downvote", idea: theIdea})
               break
 
@@ -194,8 +185,7 @@ const voteIdea = async (req: Request, res: Response) => {
               res.status(400).json({error: "Bad request. Invalid voteType."})
               break
           }
-        } catch (err) {
-          console.log(err)
+        } catch {
           res.status(404).json({error: `Idea with id ${ideaId} not found.`})
         }
       }

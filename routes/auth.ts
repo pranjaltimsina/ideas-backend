@@ -48,8 +48,7 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
       const newToken: string = jwt.sign(JSON.stringify(currentUser._id).slice(1, -1), JWT_SECRET)
       return res.status(200).json({data: currentUser, token: newToken})
     }
-  } catch (err) {
-    console.log(err)
+  } catch {
     return res.status(401).json({error: "Unauthorized."})
   }
 })

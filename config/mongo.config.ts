@@ -8,9 +8,11 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     } as ConnectOptions);
+      if (process.env.NODE_ENV === 'development')
       console.log('Connected to Database');
-  } catch (err) {
-      console.log('Failed to connect to MongoDB', err);
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development')
+        console.log('Failed to connect to MongoDB', err);
   }
 }
 

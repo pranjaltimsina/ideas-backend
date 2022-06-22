@@ -13,5 +13,6 @@ connectDB()
 const server = http.createServer(app)
 
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+  if (process.env.NODE_ENV === 'development')
+    console.log(`Server running on http://localhost:${PORT}`)
 })
