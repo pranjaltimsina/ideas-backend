@@ -15,6 +15,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
 }
 
 interface reqIdea {
+  _id?: string,
   title: string,
   description: string,
   tags?: string[],
@@ -101,20 +102,68 @@ const editIdea = async (req: Request, res: Response) => {
         } else {
           if (mongoUserId.equals(theIdea.author)) {
             try {
-              /*
-                Validate request body
-              */
+              const idea: reqIdea = req.body.idea
 
-              /*
+              if (!idea.title) {
+                return res.status(400).json({error: "Bad request. Title of the idea is missing"})
+              }
+
+              idea.title = idea.title.trim()
+
+              if (!idea.description) {
+                return res.status(400).json({error: "Bad request. Description of the idea is missing"})
+              }
+
+              idea.description = idea.description.trim()
+
+              try {
+                if (idea.tags) {
+                  idea.tags.map(tag => {
+                    tag.trim().toLowerCase()
+                  });
+                }
+                idea.downvotes = []
+                idea.upvotes = [mongoUserId]
+
+                /*
                 Update the idea
-              */
+                */
+               try {
+                  const result = await Idea.updateOne({
+                    _id: mongoIdeaId
+                  }, {
+                    $set: {
+                      title: idea.title,
+                      description: idea.description,
+                      downvotes: idea.downvotes,
+                      upvotes: idea.upvotes
+                    }
+                  } /*, (err: Error, idea: Document) => {
+                    if (err) {
+                      console.log('here error')
+                      return res.status(500).json({error: 'Could not update idea.'})
+                    } else {
+                      console.log('here success')
+                      return res.status(200).json({message: 'Edited Idea', idea: idea})
+                    }
+                  } */)
+                  if (result.matchedCount === 0 ) {
+                    return res.status(404).json({error: 'Idea not found'})
+                  } else if (result.modifiedCount === 1) {
+                    return res.status(200).json({message: 'Success'})
+                  }
 
-              res.status(200).json({message: 'Edited Idea', idea: theIdea})
+                } catch {
+                  return res.status(500).json({error: 'Could not update idea'})
+                }
+              } catch {
+                return res.status(400).json({error: "Bad request. Error parsing idea tags."})
+              }
             } catch {
-              res.status(500).json({error: 'Could not edit Idea.'})
+              return res.status(500).json({error: 'Could not edit Idea.'})
             }
           } else {
-            res.status(401).json({error: 'Unauthorized.'})
+            return res.status(401).json({error: 'Unauthorized.'})
           }
         }
       }

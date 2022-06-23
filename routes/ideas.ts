@@ -19,10 +19,10 @@ router.delete('/:ideaId', ideaController.deleteIdea)
 
 router.patch('/:ideaId/vote', ideaController.voteIdea)
 
-router.post('/:ideaId/comment', commentController.addComment)
+router.post('/:ideaId/comments', commentController.addComment)
 
-router.delete('/:ideaId/comment', commentController.deleteComment)
+router.delete('/:ideaId/comments', commentController.deleteComment)
 
-router.put('/:ideaId/comment', commentController.editComment)
+router.put('/:ideaId/comments', commentController.editComment)
 
 export default router
