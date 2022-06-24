@@ -138,19 +138,16 @@ const editIdea = async (req: Request, res: Response) => {
                       downvotes: idea.downvotes,
                       upvotes: idea.upvotes
                     }
-                  } /*, (err: Error, idea: Document) => {
-                    if (err) {
-                      console.log('here error')
-                      return res.status(500).json({error: 'Could not update idea.'})
-                    } else {
-                      console.log('here success')
-                      return res.status(200).json({message: 'Edited Idea', idea: idea})
-                    }
-                  } */)
+                  })
+                  const newIdea = await Idea.findById({_id: mongoIdeaId})
                   if (result.matchedCount === 0 ) {
                     return res.status(404).json({error: 'Idea not found'})
                   } else if (result.modifiedCount === 1) {
-                    return res.status(200).json({message: 'Success'})
+                    return res.status(200).json({message: 'Success', idea: newIdea})
+                  } else if (result.modifiedCount === 0) {
+                    return res.status(304)
+                  } else {
+                    res.status(500).json({error: 'Idea could not be edited'})
                   }
 
                 } catch {
