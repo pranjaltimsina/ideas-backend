@@ -11,6 +11,8 @@ router.use(jwt)
 
 router.get('/', ideaController.getAllIdeas)
 
+router.get('/user/:userId', ideaController.getIdeaByUserId)
+
 router.post('/', ideaController.createIdea)
 
 router.put('/:ideaId', ideaController.editIdea)

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import mongoose,  { isValidObjectId } from 'mongoose'
+import mongoose, { mongo } from 'mongoose'
 
 import Idea from '../models/idea'
 import { IIdea } from '../types/types'
@@ -11,6 +11,26 @@ const getAllIdeas = async (req: Request, res: Response) => {
     res.status(200).json({ideas: ideas})
   } catch {
     res.status(502).json({error: "Could not retrieve ideas from the database."})
+  }
+}
+
+const getIdeaByUserId = async (req: Request, res: Response) => {
+  const userId = req.params.userId
+
+  if (!mongoose.isValidObjectId(userId)) {
+    return res.status(400).json({error: "Bad request. Invalid user id."})
+  }
+
+  const mongoUserId = new mongoose.Types.ObjectId(userId)
+
+  try {
+    const ideas = await Idea.find({
+      author: mongoUserId
+    })
+
+    return res.status(200).json({ideas: ideas})
+  } catch {
+    return res.status(500).json({error: 'Could not fetch ideas.'})
   }
 }
 
@@ -283,6 +303,7 @@ const voteIdea = async (req: Request, res: Response) => {
 
 export {
   getAllIdeas,
+  getIdeaByUserId,
   createIdea,
   editIdea,
   deleteIdea,
