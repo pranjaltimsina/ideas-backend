@@ -21,8 +21,9 @@ interface IIdea {
 
 interface IComment {
   ideaId: Types.ObjectId,
-  parentCommentId: Types.ObjectId,
+  parentCommentId?: Types.ObjectId,
   author: Types.ObjectId,
+  authorName: String,
   body: String
 }
 

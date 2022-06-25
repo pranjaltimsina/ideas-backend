@@ -20,6 +20,11 @@ const commentSchema = new mongoose.Schema<IComment>({
     required: true
   },
 
+  authorName: {
+    type: String,
+    required: true
+  },
+
   body: {
     type: String,
     required: true

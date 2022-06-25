@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import mongoose, { mongo } from 'mongoose'
+import Comment from '../models/comment'
 
 import Idea from '../models/idea'
 import { IIdea } from '../types/types'
@@ -11,6 +12,29 @@ const getAllIdeas = async (req: Request, res: Response) => {
     res.status(200).json({ideas: ideas})
   } catch {
     res.status(502).json({error: "Could not retrieve ideas from the database."})
+  }
+}
+
+const getIdeaById = async (req: Request, res: Response) => {
+  const ideaId: string = req.params.ideaId
+
+  if (!mongoose.isValidObjectId(ideaId)) {
+    return res.status(400).json({error: "Bad Request. Invalid Idea Id."})
+  }
+  const mongoIdeaId = new mongoose.Types.ObjectId(ideaId)
+  try {
+    const idea = await Idea.findById(ideaId).lean()
+
+    const comments = await Comment.find({
+      ideaId: mongoIdeaId,
+      parentCommentId : { "$exists" : false }
+    }).lean()
+    console.log(idea)
+    console.log(comments)
+
+    return res.status(200).json({idea: idea, comments: comments})
+  } catch {
+    return res.status(500).json({error: "Could not find idea."})
   }
 }
 
@@ -26,7 +50,7 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
   try {
     const ideas = await Idea.find({
       author: mongoUserId
-    })
+    }).lean()
 
     return res.status(200).json({ideas: ideas})
   } catch {
@@ -105,14 +129,14 @@ const editIdea = async (req: Request, res: Response) => {
   const userId: string = jwt.decode(res.locals.authorization || '')?.toString() || ''
 
   if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).json({error: "Bad request. Invalid auth token."})
+    return res.status(400).json({error: "Bad request. Invalid auth token."})
   } else {
     const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
     try {
       const ideaId: string = req.params.ideaId
 
       if (!mongoose.isValidObjectId(ideaId)) {
-        res.status(400).json({error: "Invalid idea Id."})
+        return res.status(400).json({error: "Invalid idea Id."})
       } else {
         const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
         // check if idea id and user id is the same
@@ -165,9 +189,9 @@ const editIdea = async (req: Request, res: Response) => {
                   } else if (result.modifiedCount === 1) {
                     return res.status(200).json({message: 'Success', idea: newIdea})
                   } else if (result.modifiedCount === 0) {
-                    return res.status(304)
+                    return res.status(304).end()
                   } else {
-                    res.status(500).json({error: 'Idea could not be edited'})
+                    return res.status(500).json({error: 'Idea could not be edited'})
                   }
 
                 } catch {
@@ -185,7 +209,7 @@ const editIdea = async (req: Request, res: Response) => {
         }
       }
     } catch {
-      res.status(500).json({error: "Unable to fulfill request due to some error"})
+      return res.status(500).json({error: "Unable to fulfill request due to some error"})
     }
   }
 }
@@ -303,6 +327,7 @@ const voteIdea = async (req: Request, res: Response) => {
 
 export {
   getAllIdeas,
+  getIdeaById,
   getIdeaByUserId,
   createIdea,
   editIdea,
