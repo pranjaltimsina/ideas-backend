@@ -150,7 +150,7 @@ const editComment = async (req: Request, res: Response) => {
 
   const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
 
-  const commentId: string = req.params.ideaId || ''
+  const commentId: string = req.params.commentId || ''
 
   if (!mongoose.isValidObjectId(commentId)) {
     return res.status(400).json({error: "Invalid comment Id."})
@@ -175,7 +175,7 @@ const editComment = async (req: Request, res: Response) => {
   try {
     const newComment = await Comment.findByIdAndUpdate(mongoCommentId, {
       body: newBody
-    })
+    }, { new: true })
 
     return res.status(200).json({message: "Successfully updated comment.", comment: newComment})
   } catch {
