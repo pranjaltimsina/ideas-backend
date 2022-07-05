@@ -1,5 +1,9 @@
+import dotenv from 'dotenv'
+
 import { Request, Response, NextFunction } from 'express'
 import { LoginTicket, OAuth2Client } from 'google-auth-library'
+
+dotenv.config()
 
 const CLIENT_ID: string = process.env.G_CLIENT_ID || ''
 
@@ -11,15 +15,15 @@ const verify = async (req: Request, res: Response, next: NextFunction) => {
   res.locals.userToken = userToken
 
   if (!userToken) {
-    return res.status(400).json({error: "Bad request. Perhaps you forgot to send the user Token."})
-  }
-  else {
+    return res.status(400).json({ error: 'Bad request. Perhaps you forgot to send the user Token.' })
+  } else {
     await client.verifyIdToken({
       idToken: userToken,
       audience: CLIENT_ID
     }, (err: Error | null, login?: LoginTicket | undefined) => {
       if (err) {
-        return res.status(401).json({error: "Bad token."})
+        console.error(err)
+        return res.status(401).json({ error: 'Bad token.' })
       } else {
         res.locals.ticket = login
         next()

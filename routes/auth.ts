@@ -1,5 +1,5 @@
-import express, { NextFunction, Request, Response, Router } from 'express'
-import { LoginTicket, TokenPayload } from 'google-auth-library'
+import express, { Request, Response, Router } from 'express'
+import { LoginTicket } from 'google-auth-library'
 import jwt from 'jsonwebtoken'
 
 import verifyGoogleUser from '../middlewares/ticket'
@@ -22,7 +22,6 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
       googleId: userID
     })
 
-
     if (!currentUser) {
       const newUser = await new User({
         googleId: userID,
@@ -35,9 +34,15 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
 
       await newUser.save((saveErr: any, savedUser: any) => {
         if (saveErr) {
-          res.status(502).json({error: "Could not create user"})
+          res.status(502).json({ error: 'Could not create user' })
         } else {
-          const newToken: string = jwt.sign(JSON.stringify(savedUser._id).slice(1, -1), JWT_SECRET)
+          // console.log(JSON.stringify(savedUser._id).slice(1, -1))
+          const newToken: string = jwt.sign({
+            id: JSON.stringify(savedUser._id).slice(1, -1),
+            name: savedUser.name
+          }, JWT_SECRET, {
+            expiresIn: '1h'
+          })
           return res.status(201).json({
             data: savedUser,
             token: newToken
@@ -45,11 +50,17 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         }
       })
     } else {
-      const newToken: string = jwt.sign(JSON.stringify(currentUser._id).slice(1, -1), JWT_SECRET)
-      return res.status(200).json({data: currentUser, token: newToken})
+      // console.log(JSON.stringify(currentUser._id).slice(1, -1))
+      const newToken: string = jwt.sign({
+        id: JSON.stringify(currentUser._id).slice(1, -1),
+        name: currentUser.name
+      }, JWT_SECRET, {
+        expiresIn: '1h'
+      })
+      return res.status(200).json({ data: currentUser, token: newToken })
     }
   } catch {
-    return res.status(401).json({error: "Unauthorized."})
+    return res.status(401).json({ error: 'Unauthorized.' })
   }
 })
 

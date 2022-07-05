@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose'
+import mongoose from 'mongoose'
 import { IIdea } from '../types/types'
 
 const Schema = mongoose.Schema

@@ -7,7 +7,7 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
   let authorization = req.headers.authorization
   if (!authorization) {
     return res.status(401).json({
-      error: "Auth token not found in header."
+      error: 'Auth token not found in header.'
     })
   } else {
     if (authorization.startsWith('Bearer')) {
@@ -17,11 +17,12 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     jwt.verify(authorization, JWT_SECRET, (err, user) => {
       if (err) {
         return res.status(403).json({
-          error: "Invalid auth token."
+          error: 'Invalid auth token.'
         })
+      } else {
+        res.locals.user = user
+        next()
       }
-
-      next()
     })
   }
 }
