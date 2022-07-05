@@ -10,6 +10,11 @@ const ideaSchema = new Schema<IIdea>({
     required: true
   },
 
+  authorName: {
+    type: String,
+    required: true
+  },
+
   title: {
     type: String,
     required: true

@@ -4,7 +4,8 @@ import mongoose, { mongo } from 'mongoose'
 import Comment from '../models/comment'
 
 import Idea from '../models/idea'
-import { IIdea } from '../types/types'
+import User from '../models/user'
+import { IIdea, IUser } from '../types/types'
 
 const getAllIdeas = async (req: Request, res: Response) => {
   try {
@@ -73,6 +74,15 @@ const createIdea = async (req: Request, res: Response) => {
 
     const userId:string =  jwt.decode(res.locals.authorization || '')?.toString() || ''
     const userObjectId = new mongoose.Types.ObjectId(userId)
+
+    const user: IUser | null= await User.findById(userObjectId).lean()
+
+    if (user === null) {
+      return res.status(404).json({error: "Unauthorized. User Does not exist."})
+    }
+
+    const userName = user.name
+
     try {
 
       const idea: reqIdea = req.body.idea
@@ -105,6 +115,7 @@ const createIdea = async (req: Request, res: Response) => {
       try {
         const createdIdea = await new Idea({
           author: userObjectId,
+          authorName: userName,
           title: idea.title,
           description: idea.description,
           upvotes: idea.upvotes,

@@ -11,6 +11,7 @@ interface IUser {
 
 interface IIdea {
   author: Types.ObjectId,
+  authorName: String,
   title: String,
   description: String,
   upvotes: Types.ObjectId[],
