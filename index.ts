@@ -7,7 +7,7 @@ import connectDB from './config/mongo.config'
 
 dotenv.config({ path: './.env' })
 
-const PORT:string = process.env.PORT || '8080'
+const PORT: string = process.env.PORT || '8080'
 
 const MONGO_URI: string = process.env.MONGO_URI || ''
 

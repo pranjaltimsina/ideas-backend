@@ -57,24 +57,24 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
 }
 
 interface reqIdea {
-  _id?: string,
-  title: string,
-  description: string,
-  tags?: string[],
-  upvotes?: any,
-  downvotes?: any,
-  comments ?: any
+  _id?: string
+  title: string
+  description: string
+  tags?: string[]
+  upvotes?: any
+  downvotes?: any
+  comments?: any
 }
 
 const createIdea = async (req: Request, res: Response) => {
   try {
-    const userId:string = res.locals.user.id || ''
+    const userId: string = res.locals.user.id || ''
 
     const userObjectId = new mongoose.Types.ObjectId(userId)
 
     const user = await User.exists({ _id: userObjectId })
 
-    if (!user) {
+    if (user === null) {
       return res.status(404).json({ error: 'Unauthorized. User Does not exist.' })
     }
 
@@ -117,6 +117,7 @@ const createIdea = async (req: Request, res: Response) => {
           upvotes: idea.upvotes,
           downvotes: idea.downvotes,
           tags: idea.tags,
+          approved: false,
           createdOn: Date.now()
         }).save()
         return res.status(200).json({ idea: createdIdea, message: 'Looks like an idea was created' })
@@ -147,7 +148,7 @@ const editIdea = async (req: Request, res: Response) => {
         const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
         // check if idea id and user id is the same
         const theIdea: IIdea | null = await Idea.findById(mongoIdeaId)
-        if (!theIdea) {
+        if (theIdea === null) {
           res.status(404).json({ error: `Idea with ideaId ${mongoIdeaId} not found.` })
         } else {
           if (mongoUserId.equals(theIdea.author)) {
@@ -234,7 +235,7 @@ const deleteIdea = async (req: Request, res: Response) => {
       } else {
         const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
         const theIdea: IIdea | null = await Idea.findById(mongoIdeaId)
-        if (!theIdea) {
+        if (theIdea === null) {
           res.status(404).json({ error: `Idea with ideaId ${mongoIdeaId} not found.` })
         } else {
           if (mongoUserId.equals(theIdea.author)) {

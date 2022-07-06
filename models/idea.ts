@@ -31,6 +31,11 @@ const ideaSchema = new Schema<IIdea>({
 
   tags: [String],
 
+  approved: {
+    type: Boolean,
+    required: true
+  },
+
   createdOn: Date
 })
 

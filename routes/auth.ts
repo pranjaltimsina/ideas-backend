@@ -22,7 +22,7 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
       googleId: userID
     })
 
-    if (!currentUser) {
+    if (currentUser === null) {
       const newUser = await new User({
         googleId: userID,
         name: ticketPayload?.name,

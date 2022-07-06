@@ -45,11 +45,11 @@ const addComment = async (req: Request, res: Response) => {
 
   const user = await User.exists({ _id: mongoUserId })
 
-  if (!user) {
+  if (user === null) {
     return res.status(500).json({ error: 'Could not create comment.' })
   }
 
-  let commentBody:string = req.body.commentBody || ''
+  let commentBody: string = req.body.commentBody || ''
 
   commentBody = commentBody.trim()
 
@@ -123,7 +123,7 @@ const deleteComment = async (req: Request, res: Response) => {
   const mongoCommentId = new mongoose.Types.ObjectId(commentId)
 
   const theIdea: IIdea | null = await Comment.findById(mongoCommentId)
-  if (!theIdea) {
+  if (theIdea === null) {
     return res.status(404).json({ error: 'Bad Request. Comment not found.' })
   } else {
     if (mongoCommentId.equals(theIdea.author)) {
@@ -157,7 +157,7 @@ const editComment = async (req: Request, res: Response) => {
 
   const theComment: IComment | null = await Comment.findById(mongoCommentId)
 
-  if (!theComment) {
+  if (theComment === null) {
     return res.status(404).json({ error: 'Could not find comment' })
   }
 
@@ -165,7 +165,7 @@ const editComment = async (req: Request, res: Response) => {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const newBody:string = req.body.commentBody.trim() || ''
+  const newBody: string = req.body.commentBody.trim() || ''
 
   if (newBody === '') {
     return res.status(400).json({ error: 'Bad Request. Comment body cannot be empty' })
