@@ -36,6 +36,11 @@ const ideaSchema = new Schema<IIdea>({
     required: true
   },
 
+  rejected: {
+    type: Boolean,
+    required: true
+  },
+
   createdOn: Date
 }, {
   versionKey: false

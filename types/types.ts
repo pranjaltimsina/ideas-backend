@@ -18,6 +18,7 @@ interface IIdea {
   downvotes: Types.ObjectId[]
   tags: String[]
   approved: Boolean
+  rejected: Boolean
   createdOn: Date
 }
 
