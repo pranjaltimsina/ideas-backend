@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import Comment from '../models/comment'
 import Idea from '../models/idea'
+import User from '../models/user'
 
 const getUserComments = async (req: Request, res: Response) => {
   const userId: string = res.locals.userId || ''
@@ -30,8 +31,18 @@ const getUserIdeas = async (req: Request, res: Response) => {
   }
 }
 
-const getUserProfile = (req: Request, res: Response) => {
-  return res.status(501).end()
+const getUserProfile = async (req: Request, res: Response) => {
+  const userId: string = res.locals.userId || ''
+
+  try {
+    const user = await User.findById(userId).lean()
+    if (user === null) {
+      return res.status(404).json({ error: 'User not found.' })
+    }
+    return res.status(200).json({ user })
+  } catch {
+    return res.status(500).json({ error: 'Could not fetch user data.' })
+  }
 }
 
 export {
