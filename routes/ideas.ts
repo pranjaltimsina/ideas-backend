@@ -11,15 +11,15 @@ router.use(jwt)
 
 router.get('/', ideaController.getAllIdeas)
 
-router.get('/:ideaId', ideaController.getIdeaById)
-
-router.get('/user/:userId', ideaController.getIdeaByUserId)
-
 router.post('/', ideaController.createIdea)
+
+router.get('/:ideaId', ideaController.getIdeaById)
 
 router.put('/:ideaId', ideaController.editIdea)
 
 router.delete('/:ideaId', ideaController.deleteIdea)
+
+router.get('/user/:userId', ideaController.getIdeaByUserId)
 
 router.patch('/:ideaId/vote', ideaController.voteIdea)
 
