@@ -8,6 +8,11 @@ const commentSchema = new mongoose.Schema<IComment>({
     required: true
   },
 
+  ideaTitle: {
+    type: String,
+    required: true
+  },
+
   parentCommentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'comment',

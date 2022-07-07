@@ -23,6 +23,7 @@ interface IIdea {
 
 interface IComment {
   ideaId: Types.ObjectId
+  ideaTitle: String
   parentCommentId?: Types.ObjectId
   author: Types.ObjectId
   authorName: String

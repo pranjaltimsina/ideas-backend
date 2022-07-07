@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 import { IComment, IIdea } from '../types/types'
 import Comment from '../models/comment'
 import User from '../models/user'
+import Idea from '../models/idea'
 
 const getReplies = async (req: Request, res: Response) => {
   const commentId = req.params.commentId || ''
@@ -33,6 +34,9 @@ const addComment = async (req: Request, res: Response) => {
   }
 
   const mongoIdeaId = new mongoose.Types.ObjectId(ideaId)
+
+  const theIdea = await Idea.findById(mongoIdeaId)
+  const ideaTitle = theIdea?.title || ''
 
   const userId: string = res.locals.user.id || ''
   const userName: string = res.locals.user.name || ''
@@ -63,6 +67,7 @@ const addComment = async (req: Request, res: Response) => {
     const comment: IComment = {
       authorName: userName,
       ideaId: mongoIdeaId,
+      ideaTitle,
       author: mongoUserId,
       body: commentBody
     }
@@ -72,7 +77,7 @@ const addComment = async (req: Request, res: Response) => {
       ).save()
       return res.status(200).json({ message: 'Successfully added comment.', comment: createdComment })
     } catch {
-      return res.status(500).json({ error: 'Could not create commennt.' })
+      return res.status(500).json({ error: 'Could not create comment.' })
     }
   } else {
     if (!mongoose.isValidObjectId(parentCommentId)) {
@@ -90,6 +95,7 @@ const addComment = async (req: Request, res: Response) => {
     const comment: IComment = {
       authorName: userName,
       ideaId: mongoIdeaId,
+      ideaTitle,
       author: mongoUserId,
       body: commentBody,
       parentCommentId: mongoParentCommentId
@@ -100,7 +106,7 @@ const addComment = async (req: Request, res: Response) => {
       ).save()
       return res.status(200).json({ message: 'Successfully added comment.', comment: createdComment })
     } catch {
-      return res.status(500).json({ error: 'Could not create commennt.' })
+      return res.status(500).json({ error: 'Could not create comment.' })
     }
   }
 }
