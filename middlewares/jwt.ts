@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { isValidObjectId } from 'mongoose'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'shh'
 
@@ -21,7 +22,10 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
         })
       } else {
         res.locals.user = user
-        next()
+        if (!isValidObjectId(res.locals.user.id)) {
+          return res.status(404).json({ error: 'Bad request. Invalid userId encoded in auth token.' })
+        }
+        return next()
       }
     })
   }
