@@ -34,6 +34,9 @@ const commentSchema = new mongoose.Schema<IComment>({
     type: String,
     required: true
   }
+}, {
+  collection: 'ideas-db',
+  versionKey: false
 })
 
 const Comment = mongoose.model('comment', commentSchema)

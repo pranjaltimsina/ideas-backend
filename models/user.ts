@@ -28,6 +28,9 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true
   }
+}, {
+  collection: 'ideas-db',
+  versionKey: false
 })
 
 const User = mongoose.model('user', userSchema)
