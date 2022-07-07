@@ -6,7 +6,7 @@ import Idea from '../models/idea'
 import User from '../models/user'
 import { IIdea } from '../types/types'
 
-const getAllIdeas = async (req: Request, res: Response) => {
+const getAllIdeas = async (_req: Request, res: Response) => {
   try {
     const ideas = await Idea.find().lean()
     res.status(200).json({ ideas })
@@ -15,18 +15,13 @@ const getAllIdeas = async (req: Request, res: Response) => {
   }
 }
 
-const getIdeaById = async (req: Request, res: Response) => {
-  const ideaId: string = req.params.ideaId
-
-  if (!mongoose.isValidObjectId(ideaId)) {
-    return res.status(400).json({ error: 'Bad Request. Invalid Idea Id.' })
-  }
-  const mongoIdeaId = new mongoose.Types.ObjectId(ideaId)
+const getIdeaById = async (_req: Request, res: Response) => {
+  const ideaId = res.locals.ideaId
   try {
     const idea = await Idea.findById(ideaId).lean()
 
     const comments = await Comment.find({
-      ideaId: mongoIdeaId,
+      ideaId,
       parentCommentId: { $exists: false }
     }).lean()
 
@@ -67,196 +62,150 @@ interface reqIdea {
 }
 
 const createIdea = async (req: Request, res: Response) => {
+  const userId: string = res.locals.user.id || ''
+  const userName: string = res.locals.user.name || ''
+
+  const user = await User.exists({ _id: userId })
+
+  if (user === null) {
+    return res.status(404).json({ error: 'Unauthorized. User Does not exist.' })
+  }
   try {
-    const userId: string = res.locals.user.id || ''
+    const idea: reqIdea = req.body.idea
 
-    const userObjectId = new mongoose.Types.ObjectId(userId)
-
-    const user = await User.exists({ _id: userObjectId })
-
-    if (user === null) {
-      return res.status(404).json({ error: 'Unauthorized. User Does not exist.' })
+    if (!idea.title) {
+      return res.status(400).json({ error: 'Bad request. Title of the idea is missing.' })
     }
+    idea.title = idea.title.trim()
 
-    const userName: string = res.locals.user.name || ''
+    if (!idea.description) {
+      return res.status(400).json({ error: 'Bad request. Description of the idea is missing.' })
+    }
+    idea.description = idea.description.trim()
 
     try {
-      const idea: reqIdea = req.body.idea
-
-      if (!idea.title) {
-        return res.status(400).json({ error: 'Bad request. Title of the idea is missing' })
-      }
-
-      idea.title = idea.title.trim()
-
-      if (!idea.description) {
-        return res.status(400).json({ error: 'Bad request. Description of the idea is missing' })
-      }
-
-      idea.description = idea.description.trim()
-
-      try {
-        if (idea.tags) {
-          idea.tags.map(tag => {
-            return tag.trim().toLowerCase()
-          })
-        }
-      } catch {
-        return res.status(400).json({ error: 'Bad request. Error parsing idea tags.' })
-      }
-
-      idea.downvotes = []
-      idea.upvotes = [userObjectId]
-
-      try {
-        const createdIdea = await new Idea({
-          author: userObjectId,
-          authorName: userName,
-          title: idea.title,
-          description: idea.description,
-          upvotes: idea.upvotes,
-          downvotes: idea.downvotes,
-          tags: idea.tags,
-          approved: false,
-          createdOn: Date.now()
-        }).save()
-        return res.status(200).json({ idea: createdIdea, message: 'Looks like an idea was created' })
-      } catch {
-        return res.status(502).json({ error: 'Error inserting idea in the database.' })
+      if (idea.tags) {
+        idea.tags = idea.tags.map(tag => {
+          return tag.trim().toLowerCase()
+        })
       }
     } catch {
-      return res.status(400).json({ error: 'Bad request. Request body does not have an idea, or the idea is invalid.' })
+      return res.status(400).json({ error: 'Bad request. Error parsing idea tags.' })
+    }
+
+    idea.downvotes = []
+    idea.upvotes = [userId]
+
+    try {
+      const createdIdea = await new Idea({
+        author: userId,
+        authorName: userName,
+        title: idea.title,
+        description: idea.description,
+        upvotes: idea.upvotes,
+        downvotes: idea.downvotes,
+        tags: idea.tags,
+        approved: false,
+        rejected: false,
+        createdOn: Date.now()
+      }).save()
+
+      return res.status(200).json({ idea: createdIdea, message: 'Idea created successfully.' })
+    } catch {
+      return res.status(502).json({ error: 'Error inserting idea in the database.' })
     }
   } catch {
-    return res.status(401).json({ error: 'Unauthorized.' })
+    return res.status(400).json({ error: 'Bad request. Request body does not have an idea.' })
   }
 }
 
 const editIdea = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
+  const ideaId: string = res.locals.ideaId || ''
+  const theIdea: IIdea | null = await Idea.findById(ideaId)
+  if (theIdea === null) {
+    return res.status(404).json({ error: `Idea with ideaId ${ideaId} not found.` })
+  }
 
-  if (!mongoose.isValidObjectId(userId)) {
-    return res.status(400).json({ error: 'Bad request. Invalid auth token.' })
-  } else {
-    const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
+  if (theIdea.author.equals(userId)) {
+    const idea: reqIdea = req.body.idea
+    if (!idea.title) {
+      return res.status(400).json({ error: 'Bad request. Title of the idea is missing' })
+    }
+    idea.title = idea.title.trim()
+
+    if (!idea.description) {
+      return res.status(400).json({ error: 'Bad request. Description of the idea is missing' })
+    }
+    idea.description = idea.description.trim()
+
     try {
-      const ideaId: string = req.params.ideaId
-
-      if (!mongoose.isValidObjectId(ideaId)) {
-        return res.status(400).json({ error: 'Invalid idea Id.' })
-      } else {
-        const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
-        // check if idea id and user id is the same
-        const theIdea: IIdea | null = await Idea.findById(mongoIdeaId)
-        if (theIdea === null) {
-          res.status(404).json({ error: `Idea with ideaId ${mongoIdeaId} not found.` })
-        } else {
-          if (mongoUserId.equals(theIdea.author)) {
-            try {
-              const idea: reqIdea = req.body.idea
-
-              if (!idea.title) {
-                return res.status(400).json({ error: 'Bad request. Title of the idea is missing' })
-              }
-
-              idea.title = idea.title.trim()
-
-              if (!idea.description) {
-                return res.status(400).json({ error: 'Bad request. Description of the idea is missing' })
-              }
-
-              idea.description = idea.description.trim()
-
-              try {
-                if (idea.tags) {
-                  idea.tags.map(tag => {
-                    return tag.trim().toLowerCase()
-                  })
-                }
-                idea.downvotes = []
-                idea.upvotes = [mongoUserId]
-
-                /*
-                Update the idea
-                */
-                try {
-                  const result = await Idea.updateOne({
-                    _id: mongoIdeaId
-                  }, {
-                    $set: {
-                      title: idea.title,
-                      description: idea.description,
-                      downvotes: idea.downvotes,
-                      upvotes: idea.upvotes
-                    }
-                  })
-                  const newIdea = await Idea.findById({ _id: mongoIdeaId })
-                  if (result.matchedCount === 0) {
-                    return res.status(404).json({ error: 'Idea not found' })
-                  } else if (result.modifiedCount === 1) {
-                    return res.status(200).json({ message: 'Success', idea: newIdea })
-                  } else if (result.modifiedCount === 0) {
-                    return res.status(304).end()
-                  } else {
-                    return res.status(500).json({ error: 'Idea could not be edited' })
-                  }
-                } catch {
-                  return res.status(500).json({ error: 'Could not update idea' })
-                }
-              } catch {
-                return res.status(400).json({ error: 'Bad request. Error parsing idea tags.' })
-              }
-            } catch {
-              return res.status(500).json({ error: 'Could not edit Idea.' })
-            }
-          } else {
-            return res.status(401).json({ error: 'Unauthorized.' })
-          }
-        }
+      if (idea.tags) {
+        idea.tags = idea.tags.map(tag => {
+          return tag.trim().toLowerCase()
+        })
       }
     } catch {
-      return res.status(500).json({ error: 'Unable to fulfill request due to some error' })
+      return res.status(400).json({ error: 'Bad request. Error parsing idea tags.' })
+    }
+
+    idea.downvotes = []
+    idea.upvotes = [userId]
+
+    try {
+      const result = await Idea.updateOne({
+        _id: ideaId
+      }, {
+        $set: {
+          title: idea.title,
+          description: idea.description,
+          downvotes: idea.downvotes,
+          upvotes: idea.upvotes
+        }
+      })
+
+      const newIdea = await Idea.findById({ _id: ideaId })
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ error: 'Idea not found' })
+      } else if (result.modifiedCount === 1) {
+        return res.status(200).json({ message: 'Successfully edited idea.', idea: newIdea })
+      } else if (result.modifiedCount === 0) {
+        return res.status(304).end()
+      } else {
+        return res.status(500).json({ error: 'Idea could not be edited' })
+      }
+    } catch {
+      return res.status(500).json({ error: 'Could not update idea' })
     }
   }
+
+  return res.status(404).json({ error: 'Unauthorized. You cannot edit an idea created by someone else.' })
 }
 
 const deleteIdea = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
+  const ideaId: string = res.locals.ideaId || ''
 
-  if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).json({ error: 'Bad request. Invalid auth token.' })
+  const theIdea: IIdea | null = await Idea.findById(ideaId)
+
+  if (theIdea === null) {
+    return res.status(404).json({ error: `Idea with ideaId ${ideaId} not found.` })
   } else {
-    const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
-    try {
-      const ideaId: string = req.params.ideaId
-
-      if (!mongoose.isValidObjectId(ideaId)) {
-        res.status(400).json({ error: 'Invalid idea Id.' })
-      } else {
-        const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
-        const theIdea: IIdea | null = await Idea.findById(mongoIdeaId)
-        if (theIdea === null) {
-          res.status(404).json({ error: `Idea with ideaId ${mongoIdeaId} not found.` })
-        } else {
-          if (mongoUserId.equals(theIdea.author)) {
-            try {
-              await Idea.deleteOne({ _id: mongoIdeaId })
-              res.status(200).json({ message: 'Deleted Idea' })
-            } catch {
-              res.status(500).json({ error: 'Could not delete Idea.' })
-            }
-          } else {
-            res.status(401).json({ error: 'Unauthorized.' })
-          }
-        }
+    if (theIdea.author.equals(userId)) {
+      try {
+        await Idea.deleteOne({ _id: ideaId })
+        return res.status(200).json({ message: 'Deleted Idea' })
+      } catch {
+        return res.status(500).json({ error: 'Could not delete Idea.' })
       }
-    } catch {
-      res.status(500).json({ error: 'Unable to fulfill request due to some error' })
     }
+
+    return res.status(401).json({ error: 'Unauthorized. You cannot delete an idea created by someone else.' })
   }
 }
 
-const resetVote = async (mongoUserId: mongoose.Types.ObjectId, mongoIdeaId: mongoose.Types.ObjectId) => {
+const resetVote = async (mongoUserId: string, mongoIdeaId: string) => {
   return await Idea.updateOne({ _id: mongoIdeaId }, {
     $pull: {
       upvotes: mongoUserId,
@@ -267,64 +216,48 @@ const resetVote = async (mongoUserId: mongoose.Types.ObjectId, mongoIdeaId: mong
 
 const voteIdea = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
+  const ideaId: string = res.locals.ideaId || ''
 
-  if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).json({ error: 'Bad request. Invalid auth token.' })
-  } else {
-    const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
-    try {
-      const ideaId: string = req.params.ideaId
+  try {
+    let voteType = req.body.voteType
 
-      if (!mongoose.isValidObjectId(ideaId)) {
-        res.status(400).json({ error: 'Invalid idea Id.' })
-      } else {
-        const mongoIdeaId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(ideaId)
-        try {
-          let voteType = req.body.voteType
-          if (typeof voteType === 'string') {
-            voteType = parseInt(voteType)
-          }
-          let theIdea: IIdea | null
-          switch (voteType) {
-            case 0:
-              await resetVote(mongoUserId, mongoIdeaId)
-              theIdea = await Idea.findById(mongoIdeaId)
-              res.status(200).json({ message: 'Removed upvote/downvote', idea: theIdea })
-              break
-
-            case 1:
-              await resetVote(mongoUserId, mongoIdeaId)
-              await Idea.updateOne({ _id: mongoIdeaId }, {
-                $push: {
-                  upvotes: mongoUserId
-                }
-              })
-              theIdea = await Idea.findById(mongoIdeaId)
-              res.status(200).json({ message: 'Added upvote', idea: theIdea })
-              break
-
-            case 2:
-              await resetVote(mongoUserId, mongoIdeaId)
-              await Idea.updateOne({ _id: mongoIdeaId }, {
-                $push: {
-                  downvotes: mongoUserId
-                }
-              })
-              theIdea = await Idea.findById(mongoIdeaId)
-              res.status(200).json({ message: 'Added downvote', idea: theIdea })
-              break
-
-            default:
-              res.status(400).json({ error: 'Bad request. Invalid voteType.' })
-              break
-          }
-        } catch {
-          res.status(404).json({ error: `Idea with id ${ideaId} not found.` })
-        }
-      }
-    } catch {
-      res.status(400).json({ error: 'Bad request. Invalid request body' })
+    if (typeof voteType === 'string') {
+      voteType = parseInt(voteType)
     }
+
+    let theIdea: IIdea | null
+
+    switch (voteType) {
+      case 0:
+        await resetVote(userId, ideaId)
+        theIdea = await Idea.findById(ideaId)
+        return res.status(200).json({ message: 'Removed upvote/downvote', idea: theIdea })
+
+      case 1:
+        await resetVote(userId, ideaId)
+        await Idea.updateOne({ _id: ideaId }, {
+          $push: {
+            upvotes: userId
+          }
+        })
+        theIdea = await Idea.findById(ideaId)
+        return res.status(200).json({ message: 'Added upvote', idea: theIdea })
+
+      case 2:
+        await resetVote(userId, ideaId)
+        await Idea.updateOne({ _id: ideaId }, {
+          $push: {
+            downvotes: userId
+          }
+        })
+        theIdea = await Idea.findById(ideaId)
+        return res.status(200).json({ message: 'Added downvote', idea: theIdea })
+
+      default:
+        return res.status(400).json({ error: 'Bad request. Invalid voteType.' })
+    }
+  } catch {
+    return res.status(404).json({ error: `Idea with id ${ideaId} not found.` })
   }
 }
 
