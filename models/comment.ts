@@ -35,7 +35,6 @@ const commentSchema = new mongoose.Schema<IComment>({
     required: true
   }
 }, {
-  collection: 'ideas-db',
   versionKey: false
 })
 

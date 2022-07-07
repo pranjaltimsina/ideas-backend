@@ -38,7 +38,6 @@ const ideaSchema = new Schema<IIdea>({
 
   createdOn: Date
 }, {
-  collection: 'ideas-db',
   versionKey: false
 })
 

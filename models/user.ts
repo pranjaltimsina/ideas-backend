@@ -29,7 +29,6 @@ const userSchema = new Schema<IUser>({
     required: true
   }
 }, {
-  collection: 'ideas-db',
   versionKey: false
 })
 
