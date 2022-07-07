@@ -14,8 +14,8 @@ interface IIdea {
   authorName: String
   title: String
   description: String
-  upvotes: Types.ObjectId[]
-  downvotes: Types.ObjectId[]
+  upvotes: Types.ObjectId[] | String[]
+  downvotes: Types.ObjectId[] | String[]
   tags: String[]
   approved: Boolean
   rejected: Boolean
@@ -23,10 +23,10 @@ interface IIdea {
 }
 
 interface IComment {
-  ideaId: Types.ObjectId
+  ideaId: Types.ObjectId | String
   ideaTitle: String
-  parentCommentId?: Types.ObjectId
-  author: Types.ObjectId
+  parentCommentId?: Types.ObjectId | String
+  author: Types.ObjectId | string
   authorName: String
   body: String
 }

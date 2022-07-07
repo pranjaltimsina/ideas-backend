@@ -10,15 +10,9 @@ import Idea from '../models/idea'
 const getReplies = async (req: Request, res: Response) => {
   const commentId = req.params.commentId || ''
 
-  if (!mongoose.isValidObjectId(commentId)) {
-    return res.status(400).json({ error: 'Bad Request. Invalid comment id.' })
-  }
-
-  const mongoCommentId = new mongoose.Types.ObjectId(commentId)
-
   try {
     const replies = await Comment.find({
-      parentCommentId: mongoCommentId
+      parentCommentId: commentId
     }).lean()
     return res.status(200).json({ replies })
   } catch {
@@ -29,34 +23,26 @@ const getReplies = async (req: Request, res: Response) => {
 const addComment = async (req: Request, res: Response) => {
   const ideaId: string = req.params.ideaId
 
-  if (!mongoose.isValidObjectId(ideaId)) {
-    return res.status(400).json({ error: 'Bad request. Invalid ideaId.' })
-  }
-
-  const mongoIdeaId = new mongoose.Types.ObjectId(ideaId)
-
-  const theIdea = await Idea.findById(mongoIdeaId)
+  const theIdea = await Idea.findById(ideaId)
   const ideaTitle = theIdea?.title || ''
 
   const userId: string = res.locals.user.id || ''
   const userName: string = res.locals.user.name || ''
 
-  if (!mongoose.isValidObjectId(userId)) {
-    return res.status(400).json({ error: 'Bad request. Invalid auth token.' })
-  }
-
-  const mongoUserId = new mongoose.Types.ObjectId(userId)
-
-  const user = await User.exists({ _id: mongoUserId })
+  const user = await User.exists({ _id: userId })
 
   if (user === null) {
     return res.status(500).json({ error: 'Could not create comment.' })
   }
 
-  let commentBody: string = req.body.commentBody || ''
+  let commentBody: string
+  try {
+    commentBody = req.body.commentBody || ''
+  } catch {
+    return res.status(400).json({ error: 'Bad Request. Comment Body missing.' })
+  }
 
   commentBody = commentBody.trim()
-
   if (commentBody === '') {
     return res.status(400).json({ error: 'Bad request. Comment body is empty.' })
   }
@@ -64,29 +50,32 @@ const addComment = async (req: Request, res: Response) => {
   const parentCommentId = req.body.parentCommentId || ''
 
   if (parentCommentId === '') {
+    // If there is no parent comment id (top level comment)
+
     const comment: IComment = {
       authorName: userName,
-      ideaId: mongoIdeaId,
+      ideaId,
       ideaTitle,
-      author: mongoUserId,
+      author: userId,
       body: commentBody
     }
     try {
       const createdComment = await new Comment(
         comment
       ).save()
+
       return res.status(200).json({ message: 'Successfully added comment.', comment: createdComment })
     } catch {
       return res.status(500).json({ error: 'Could not create comment.' })
     }
   } else {
+    // If there is a parent comment id (reply to a comment)
+
     if (!mongoose.isValidObjectId(parentCommentId)) {
       return res.status(400).json({ error: 'Bad request. Invalid parent commentId.' })
     }
 
-    const mongoParentCommentId = new mongoose.Types.ObjectId(parentCommentId)
-
-    const parentComment = Comment.findById(mongoParentCommentId)
+    const parentComment = Comment.findById(parentCommentId)
 
     if (!parentComment) {
       return res.status(400).json({ error: 'Bad request. Parent comment does not exist.' })
@@ -94,11 +83,11 @@ const addComment = async (req: Request, res: Response) => {
 
     const comment: IComment = {
       authorName: userName,
-      ideaId: mongoIdeaId,
+      ideaId,
       ideaTitle,
-      author: mongoUserId,
+      author: userId,
       body: commentBody,
-      parentCommentId: mongoParentCommentId
+      parentCommentId
     }
     try {
       const createdComment = await new Comment(
@@ -113,77 +102,57 @@ const addComment = async (req: Request, res: Response) => {
 
 const deleteComment = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
+  const commentId: string = res.locals.commentId || ''
 
-  if (!mongoose.isValidObjectId(userId)) {
-    return res.status(400).json({ error: 'Bad request. Invalid auth token.' })
-  }
+  const theIdea: IIdea | null = await Comment.findById(commentId)
 
-  const mongoUserId = new mongoose.Types.ObjectId(userId)
-
-  const commentId: string = req.params.commentId
-
-  if (!mongoose.isValidObjectId(commentId)) {
-    return res.status(400).json({ error: 'Bad request. Invalid comment id.' })
-  }
-
-  const mongoCommentId = new mongoose.Types.ObjectId(commentId)
-
-  const theIdea: IIdea | null = await Comment.findById(mongoCommentId)
   if (theIdea === null) {
     return res.status(404).json({ error: 'Bad Request. Comment not found.' })
-  } else {
-    if (mongoCommentId.equals(theIdea.author)) {
-      try {
-        await Comment.deleteOne({ _id: mongoCommentId, author: mongoUserId })
-        return res.status(200).json({ message: 'Deleted Comment.' })
-      } catch {
-        return res.status(500).json({ error: 'Could not delete idea.' })
-      }
-    } else {
-      return res.status(401).json({ error: 'Unauthorized.' })
+  }
+
+  if (theIdea.author.equals(userId)) {
+    try {
+      await Comment.deleteOne({ _id: commentId, author: userId })
+      return res.status(200).json({ message: 'Deleted comment successfully.' })
+    } catch {
+      return res.status(500).json({ error: 'Could not delete idea.' })
     }
   }
+
+  return res.status(401).json({ error: 'Unauthorized. You cannot delete a comment created by someone else.' })
 }
 
 const editComment = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
+  const commentId: string = res.locals.commentId || ''
 
-  if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).json({ error: 'Bad request. Invalid auth token.' })
-  }
-
-  const mongoUserId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(userId)
-
-  const commentId: string = req.params.commentId || ''
-
-  if (!mongoose.isValidObjectId(commentId)) {
-    return res.status(400).json({ error: 'Invalid comment Id.' })
-  }
-  const mongoCommentId: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(commentId)
-
-  const theComment: IComment | null = await Comment.findById(mongoCommentId)
+  const theComment: IComment | null = await Comment.findById(commentId)
 
   if (theComment === null) {
     return res.status(404).json({ error: 'Could not find comment' })
   }
 
-  if (!mongoUserId.equals(theComment.author)) {
-    return res.status(401).json({ error: 'Unauthorized' })
+  if (!new mongoose.Types.ObjectId(theComment.author).equals(userId)) {
+    return res.status(401).json({ error: 'Unauthorized. You cannot edit a comment created by someone else.' })
   }
 
-  const newBody: string = req.body.commentBody.trim() || ''
-
-  if (newBody === '') {
-    return res.status(400).json({ error: 'Bad Request. Comment body cannot be empty' })
-  }
   try {
-    const newComment = await Comment.findByIdAndUpdate(mongoCommentId, {
-      body: newBody
-    }, { new: true })
+    const newBody: string = req.body.commentBody.trim() || ''
 
-    return res.status(200).json({ message: 'Successfully updated comment.', comment: newComment })
+    if (newBody === '') {
+      return res.status(400).json({ error: 'Bad Request. Comment body cannot be empty' })
+    }
+    try {
+      const newComment = await Comment.findByIdAndUpdate(commentId, {
+        body: newBody
+      }, { new: true })
+
+      return res.status(200).json({ message: 'Successfully updated comment.', comment: newComment })
+    } catch {
+      return res.status(500).json({ error: 'Could not update comment.' })
+    }
   } catch {
-    return res.status(500).json({ error: 'Could not update comment.' })
+    return res.status(400).json({ error: 'Bad Request. Comment body missing.' })
   }
 }
 
