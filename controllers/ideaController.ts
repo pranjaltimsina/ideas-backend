@@ -25,7 +25,9 @@ const getIdeaById = async (_req: Request, res: Response) => {
       parentCommentId: { $exists: false }
     }).lean()
 
-    return res.status(200).json({ idea, comments })
+    const author = await User.findById(idea?.author).lean()
+
+    return res.status(200).json({ idea, comments, author })
   } catch {
     return res.status(500).json({ error: 'Could not find idea.' })
   }
