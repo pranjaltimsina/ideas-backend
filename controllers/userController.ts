@@ -4,6 +4,15 @@ import Comment from '../models/comment'
 import Idea from '../models/idea'
 import User from '../models/user'
 
+const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const users = await User.find().lean()
+    return res.status(200).json({ users })
+  } catch {
+    return res.status(502).json({ error: 'Could not retrieve users.' })
+  }
+}
+
 const getUserComments = async (req: Request, res: Response): Promise<Response> => {
   const userId: string = res.locals.userId || ''
 
@@ -69,6 +78,7 @@ const getUserProfile = async (req: Request, res: Response): Promise<Response> =>
 }
 
 export {
+  getAllUsers,
   getUserComments,
   getUserIdeas,
   getUnapprovedIdeas,
