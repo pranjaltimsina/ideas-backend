@@ -71,7 +71,7 @@ const getUserProfile = async (req: Request, res: Response): Promise<Response> =>
   const userId: string = res.locals.userId || ''
 
   try {
-    const user = await User.findById(userId).lean()
+    const user = await User.findById(userId).select('_id name picture email').lean()
     if (user === null) {
       return res.status(404).json({ error: 'User not found.' })
     }
