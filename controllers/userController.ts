@@ -37,7 +37,9 @@ const getUserIdeas = async (req: Request, res: Response): Promise<Response> => {
       author: userId
     }).lean()
 
-    return res.status(200).json({ ideas })
+    const picture = await User.findById(userId).select('picture').lean()
+
+    return res.status(200).json({ ideas, picture: picture?.picture })
   } catch {
     return res.status(500).json({ error: 'Could not fetch ideas by user.' })
   }
