@@ -6,7 +6,7 @@ import User from '../models/user'
 
 const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const users = await User.find().lean()
+    const users = await User.find().select({ givenName: 0, familyName: 0, googleId: 0, email: 0, __v: 0 }).lean()
     return res.status(200).json({ users })
   } catch {
     return res.status(502).json({ error: 'Could not retrieve users.' })
@@ -21,7 +21,9 @@ const getUserComments = async (req: Request, res: Response): Promise<Response> =
       author: userId
     }).lean()
 
-    return res.status(200).json({ comments })
+    const picture = await User.findById(userId).select('picture').lean()
+
+    return res.status(200).json({ comments, picture: picture?.picture })
   } catch {
     return res.status(500).json({ error: 'Could not fetch comments by user.' })
   }
