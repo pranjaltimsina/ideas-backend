@@ -13,7 +13,8 @@ const getReplies = async (req: Request, res: Response) => {
   try {
     const replies = await Comment.find({
       parentCommentId: commentId
-    }).lean()
+    }).populate('author', 'picture name').lean()
+
     return res.status(200).json({ replies })
   } catch {
     return res.status(500).json({ error: 'Could not get replies.' })

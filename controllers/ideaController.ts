@@ -8,7 +8,7 @@ import { IIdea } from '../types/types'
 
 const getAllIdeas = async (_req: Request, res: Response) => {
   try {
-    const ideas = await Idea.find().lean()
+    const ideas = await Idea.find().populate('author', 'picture')
     res.status(200).json({ ideas })
   } catch {
     res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
@@ -18,16 +18,14 @@ const getAllIdeas = async (_req: Request, res: Response) => {
 const getIdeaById = async (_req: Request, res: Response) => {
   const ideaId = res.locals.ideaId
   try {
-    const idea = await Idea.findById(ideaId).lean()
+    const idea = await Idea.findById(ideaId).populate('author').lean()
 
     const comments = await Comment.find({
       ideaId,
       parentCommentId: { $exists: false }
-    }).lean()
+    }).populate('author', 'name picture').lean()
 
-    const author = await User.findById(idea?.author).lean()
-
-    return res.status(200).json({ idea, comments, author })
+    return res.status(200).json({ idea, comments })
   } catch {
     return res.status(500).json({ error: 'Could not find idea.' })
   }
@@ -45,7 +43,7 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
   try {
     const ideas = await Idea.find({
       author: mongoUserId
-    }).lean()
+    }).populate('author', 'name picture').lean()
 
     return res.status(200).json({ ideas })
   } catch {
