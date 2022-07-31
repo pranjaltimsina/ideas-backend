@@ -1,14 +1,19 @@
 import { Request, Response } from 'express'
 import mongoose from 'mongoose'
-import Comment from '../models/comment'
 
+import Comment from '../models/comment'
 import Idea from '../models/idea'
 import User from '../models/user'
 import { IIdea } from '../types/types'
 
-const getAllIdeas = async (_req: Request, res: Response) => {
+const getAllIdeas = async (req: Request, res: Response) => {
+  const offset = req.query?.offset || 0
+  const limit = req.query?.limit || 20
+
+  console.log({ offset, limit })
+
   try {
-    const ideas = await Idea.find().populate('author', 'picture')
+    const ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture')
     res.status(200).json({ ideas })
   } catch {
     res.status(502).json({ error: 'Could not retrieve ideas from the database.' })

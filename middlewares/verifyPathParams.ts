@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 
 import { isValidObjectId } from 'mongoose'
 
-const verifyParams = (paramsToVerify: string[]) => {
+const verifyPathParams = (paramsToVerify: string[]) => {
   const verifier = (req: Request, res: Response, next: NextFunction) => {
     for (const param of paramsToVerify) {
       if (req.params[param] === undefined) {
@@ -23,4 +23,4 @@ const verifyParams = (paramsToVerify: string[]) => {
   return verifier
 }
 
-export default verifyParams
+export default verifyPathParams
