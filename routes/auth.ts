@@ -55,7 +55,7 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         id: JSON.stringify(currentUser._id).slice(1, -1),
         name: currentUser.name
       }, JWT_SECRET, {
-        expiresIn: '1d'
+        expiresIn: '30d'
       })
       return res.status(200).json({ data: currentUser, token: newToken })
     }
