@@ -1,34 +1,34 @@
 import { Types } from 'mongoose'
 
 interface IUser {
-  name: String
-  givenName: String
-  familyName: String
-  googleId: String
-  email: String
-  picture: String
+  name: string
+  givenName: string
+  familyName: string
+  googleId: string
+  email: string
+  picture: string
 }
 
 interface IIdea {
   author: Types.ObjectId
-  authorName: String
-  title: String
-  description: String
-  upvotes: Types.ObjectId[] | String[]
-  downvotes: Types.ObjectId[] | String[]
-  tags: String[]
+  authorName: string
+  title: string
+  description: string
+  upvotes: Types.ObjectId[] | string[]
+  downvotes: Types.ObjectId[] | string[]
+  tags: string[]
   approved: Boolean
   rejected: Boolean
   createdOn: Date
 }
 
 interface IComment {
-  ideaId: Types.ObjectId | String
-  ideaTitle: String
-  parentCommentId?: Types.ObjectId | String
+  ideaId: Types.ObjectId | string
+  ideaTitle: string
+  parentCommentId?: Types.ObjectId | string
   author: Types.ObjectId | string
-  authorName: String
-  body: String
+  authorName: string
+  body: string
 }
 
 export {

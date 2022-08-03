@@ -5,19 +5,29 @@ import Comment from '../models/comment'
 import Idea from '../models/idea'
 import User from '../models/user'
 import { IIdea } from '../types/types'
+import filterIdeas from '../utils/filterIdeas'
 
 const getAllIdeas = async (req: Request, res: Response) => {
+  let ideas
+
   const offset = req.query?.offset || 0
   const limit = req.query?.limit || 20
+  const sortBy = req.query?.sortBy || 'date' // date, title, users given name
+  const order = req.query?.order || 'asc' // asc, desc
+  const user = req.query?.user || '' // filter by user
+  const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
 
-  console.log({ offset, limit })
+  console.log({ sortBy, order, user, tags })
 
   try {
-    const ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture')
-    res.status(200).json({ ideas })
+    ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture')
   } catch {
     res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
+
+  ideas = filterIdeas(ideas, sortBy, order, user, tags)
+
+  res.status(200).json({ ideas })
 }
 
 const getIdeaById = async (_req: Request, res: Response) => {
