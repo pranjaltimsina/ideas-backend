@@ -51,7 +51,6 @@ ideaSchema.post('save', async (doc: mongoose.Document & IIdea) => {
   if (doc?.tags.length) {
     doc?.tags.forEach(async tag => {
       if (!(await Tag.exists({ tag }))) {
-        console.log('New Tag', tag)
         try {
           await new Tag({ tag }
           ).save()
@@ -60,8 +59,6 @@ ideaSchema.post('save', async (doc: mongoose.Document & IIdea) => {
         }
       }
     })
-  } else {
-    console.log('No Tags')
   }
 })
 

@@ -2,14 +2,19 @@ import { Request, Response } from 'express'
 import mongoose from 'mongoose'
 import Comment from '../models/comment'
 import Idea from '../models/idea'
+import Tag from '../models/tags'
 import User from '../models/user'
 
 const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
   try {
     const users = await User.find().select({ givenName: 0, familyName: 0, googleId: 0, email: 0, __v: 0 }).lean()
-    return res.status(200).json({ users })
+
+    let tags: any = await Tag.find().select({ tag: 1, _id: 0 }).lean()
+    tags = tags.map((tag: { tag: string }) => tag.tag)
+
+    return res.status(200).json({ users, tags })
   } catch {
-    return res.status(502).json({ error: 'Could not retrieve users.' })
+    return res.status(502).json({ error: 'Could not retrieve users and tags.' })
   }
 }
 
