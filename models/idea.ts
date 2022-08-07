@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { IIdea } from '../types/types'
+import Tag from './tags'
 
 const Schema = mongoose.Schema
 
@@ -44,6 +45,24 @@ const ideaSchema = new Schema<IIdea>({
   createdOn: Date
 }, {
   versionKey: false
+})
+
+ideaSchema.post('save', async (doc: mongoose.Document & IIdea) => {
+  if (doc?.tags.length) {
+    doc?.tags.forEach(async tag => {
+      if (!(await Tag.exists({ tag }))) {
+        console.log('New Tag', tag)
+        try {
+          await new Tag({ tag }
+          ).save()
+        } catch {
+          console.error(`Could not save tag ${tag}`)
+        }
+      }
+    })
+  } else {
+    console.log('No Tags')
+  }
 })
 
 const Idea = mongoose.model('idea', ideaSchema)

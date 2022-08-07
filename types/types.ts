@@ -31,8 +31,14 @@ interface IComment {
   body: string
 }
 
+interface ITag {
+  tagId: Types.ObjectId | string
+  tag: string
+}
+
 export {
   IUser,
   IIdea,
-  IComment
+  IComment,
+  ITag
 }
