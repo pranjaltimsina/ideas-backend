@@ -80,11 +80,18 @@ const createIdea = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
   const userName: string = res.locals.user.name || ''
 
-  const user = await User.exists({ _id: userId })
+  let user
+
+  try {
+    user = await User.exists({ _id: userId })
+  } catch {
+    return res.status(500).json({ error: 'Internal error, could not verify user.' })
+  }
 
   if (user === null) {
     return res.status(404).json({ error: 'Unauthorized. User Does not exist.' })
   }
+
   try {
     const idea: reqIdea = req.body.idea
 
