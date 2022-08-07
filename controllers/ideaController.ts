@@ -16,18 +16,19 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const order = req.query?.order || 'asc' // asc, desc
   const user = req.query?.user || '' // filter by user
   const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
+  const query = req.query?.query || '' // the search query
 
-  console.log({ sortBy, order, user, tags })
+  // console.log({ sortBy, order, user, tags, query })
 
   try {
-    ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture')
+    ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
   } catch {
-    res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
+    return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
 
-  ideas = filterIdeas(ideas, sortBy, order, user, tags)
+  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query)
 
-  res.status(200).json({ ideas })
+  return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
 
 const getIdeaById = async (_req: Request, res: Response) => {

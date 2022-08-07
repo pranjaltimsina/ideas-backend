@@ -1,16 +1,28 @@
-import mongoose from 'mongoose'
 import { IIdea } from '../types/types'
 
-const filterIdeas = (ideas: Omit<mongoose.Document<unknown, any, IIdea> & IIdea & { _id: mongoose.Types.ObjectId;}, never>[] | undefined, sortBy: any, order: any, user: any, tags: any) => {
+import fuzzysort from 'fuzzysort'
+
+const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, query: any) => {
+  // user filter
+  if (user !== '') {
+    ideas = ideas?.filter((idea: IIdea) => idea.authorName === user)
+  }
+
+  // search query fuzzy matching
+  const results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName', 'createdOn'] })
+    .map((res) => {
+      return { idea: res.obj, score: res.score }
+    })
+
   switch (sortBy) {
     case 'title':
-      ideas?.sort((a, b) => a.title.localeCompare(b.title))
+      ideas?.sort((a: IIdea, b: IIdea) => a.title.localeCompare(b.title))
       break
     case 'user':
-      ideas?.sort((a, b) => a.authorName.localeCompare(b.authorName))
+      ideas?.sort((a: IIdea, b: IIdea) => a.authorName.localeCompare(b.authorName))
       break
     default:
-      ideas?.sort((a, b) => a.createdOn < b.createdOn ? -1 : 1)
+      ideas?.sort((a: IIdea, b: IIdea) => a.createdOn < b.createdOn ? -1 : 1)
       break
   }
 
@@ -22,13 +34,11 @@ const filterIdeas = (ideas: Omit<mongoose.Document<unknown, any, IIdea> & IIdea 
       break
   }
 
-  // user filter
-  if (user !== '') {
-    ideas = ideas?.filter((idea) => idea.authorName === user)
+  // console.log(ideas)
+  return {
+    ideas,
+    matches: results
   }
-
-  console.log(ideas)
-  return ideas
 }
 
 export default filterIdeas
