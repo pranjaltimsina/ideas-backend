@@ -19,9 +19,13 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const query = req.query?.query || '' // the search query
 
   // console.log({ sortBy, order, user, tags, query })
-
+  console.log((tags as string).split(','))
   try {
-    ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+    if (tags.length) {
+      ideas = await Idea.find({ tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+    } else {
+      ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+    }
   } catch {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }

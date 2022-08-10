@@ -8,11 +8,14 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
     ideas = ideas?.filter((idea: IIdea) => idea.authorName === user)
   }
 
+  let results
   // search query fuzzy matching
-  const results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName', 'createdOn'] })
-    .map((res) => {
-      return { idea: res.obj, score: res.score }
-    })
+  if (query !== '') {
+    results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName', 'createdOn'] })
+      .map((res) => {
+        return { idea: res.obj, score: res.score }
+      })
+  }
 
   switch (sortBy) {
     case 'title':
