@@ -187,7 +187,8 @@ const editIdea = async (req: Request, res: Response) => {
           title: idea.title,
           description: idea.description,
           downvotes: idea.downvotes,
-          upvotes: idea.upvotes
+          upvotes: idea.upvotes,
+          tags: idea.tags
         }
       })
 
