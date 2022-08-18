@@ -6,7 +6,7 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
   // user filter
   if (trending === 'true') {
     sortBy = 'upvotes'
-    return ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length > b.upvotes.length)
+    return ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length < b.upvotes.length)
   }
 
   if (madeReal === 'true') {
@@ -34,7 +34,7 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
       ideas?.sort((a: IIdea, b: IIdea) => a.authorName.localeCompare(b.authorName))
       break
     case 'upvotes':
-      ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length > b.upvotes.length)
+      ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length < b.upvotes.length)
       break
     default:
       ideas?.sort((a: IIdea, b: IIdea) => a.createdOn < b.createdOn ? -1 : 1)
