@@ -238,6 +238,7 @@ const deleteIdea = async (req: Request, res: Response) => {
     if (theIdea.author.equals(userId)) {
       try {
         await Idea.deleteOne({ _id: ideaId })
+        await Comment.deleteMany({ ideaId })
         return res.status(200).json({ message: 'Deleted Idea' })
       } catch {
         return res.status(500).json({ error: 'Could not delete Idea.' })
