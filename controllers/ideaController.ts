@@ -20,8 +20,8 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const trending = req.query?.query || 'false'
   const madeReal = req.query?.query || 'false'
 
-  console.log({ sortBy, order, user, tags, query, trending, madeReal })
-  console.log((tags as string).split(','))
+  // console.log({ sortBy, order, user, tags, query, trending, madeReal })
+  // console.log((tags as string).split(','))
   try {
     if (trending === 'true') {
       ideas = await Idea.find().limit(20).populate('author', 'picture').lean()
@@ -57,6 +57,10 @@ const getIdeaById = async (_req: Request, res: Response) => {
   }
 }
 
+interface ideaWithComments extends IIdea{
+  comments: Comment[]
+}
+
 const getIdeaByUserId = async (req: Request, res: Response) => {
   const userId = req.params.userId
 
@@ -67,9 +71,14 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
   const mongoUserId = new mongoose.Types.ObjectId(userId)
 
   try {
-    const ideas = await Idea.find({
+    let ideas: ideaWithComments[] = await Idea.find({
       author: mongoUserId
     }).populate('author', 'name picture').lean()
+
+    ideas = await Promise.all(ideas.map(async (idea) => {
+      idea.comments = await Comment.find({ ideaId: idea._id })
+      return idea
+    }))
 
     return res.status(200).json({ ideas })
   } catch {

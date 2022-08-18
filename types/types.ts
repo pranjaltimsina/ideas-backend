@@ -10,6 +10,7 @@ interface IUser {
 }
 
 interface IIdea {
+  _id: Types.ObjectId
   author: Types.ObjectId
   authorName: string
   title: string

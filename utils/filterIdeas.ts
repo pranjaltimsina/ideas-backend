@@ -49,7 +49,6 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
       break
   }
 
-  // console.log(ideas)
   return {
     ideas,
     matches: results
