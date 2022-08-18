@@ -2,8 +2,17 @@ import { IIdea } from '../types/types'
 
 import fuzzysort from 'fuzzysort'
 
-const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, query: any) => {
+const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, query: any, trending: any, madeReal: any) => {
   // user filter
+  if (trending === 'true') {
+    sortBy = 'upvotes'
+    return ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length > b.upvotes.length)
+  }
+
+  if (madeReal === 'true') {
+    return ideas
+  }
+
   if (user !== '') {
     ideas = ideas?.filter((idea: IIdea) => idea.authorName === user)
   }
@@ -23,6 +32,9 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
       break
     case 'user':
       ideas?.sort((a: IIdea, b: IIdea) => a.authorName.localeCompare(b.authorName))
+      break
+    case 'upvotes':
+      ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length > b.upvotes.length)
       break
     default:
       ideas?.sort((a: IIdea, b: IIdea) => a.createdOn < b.createdOn ? -1 : 1)

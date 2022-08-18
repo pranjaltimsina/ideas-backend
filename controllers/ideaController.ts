@@ -12,16 +12,22 @@ const getAllIdeas = async (req: Request, res: Response) => {
 
   const offset = req.query?.offset || 0
   const limit = req.query?.limit || 20
-  const sortBy = req.query?.sortBy || 'date' // date, title, users given name
+  const sortBy = req.query?.sortBy || 'date' // date, title, users given name, upvotes
   const order = req.query?.order || 'asc' // asc, desc
   const user = req.query?.user || '' // filter by user
   const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
   const query = req.query?.query || '' // the search query
+  const trending = req.query?.query || 'false'
+  const madeReal = req.query?.query || 'false'
 
-  // console.log({ sortBy, order, user, tags, query })
+  console.log({ sortBy, order, user, tags, query, trending, madeReal })
   console.log((tags as string).split(','))
   try {
-    if (tags.length) {
+    if (trending === 'true') {
+      ideas = await Idea.find().limit(20).populate('author', 'picture').lean()
+    } else if (madeReal === 'true') {
+      ideas = await Idea.find({ madeReal: true }).limit(20).populate('author', 'picture').lean()
+    } else if (tags.length) {
       ideas = await Idea.find({ tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
     } else {
       ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
@@ -30,7 +36,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
 
-  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query)
+  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal)
 
   return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
