@@ -32,6 +32,16 @@ const ideaSchema = new Schema<IIdea>({
 
   tags: [String],
 
+  gitLinks: {
+    type: [String],
+    required: false
+  },
+
+  deployedURLs: {
+    type: [String],
+    required: false
+  },
+
   approved: {
     type: Boolean,
     required: true
@@ -40,6 +50,11 @@ const ideaSchema = new Schema<IIdea>({
   rejected: {
     type: Boolean,
     required: true
+  },
+
+  madeReal: {
+    type: Boolean,
+    required: false
   },
 
   createdOn: Date

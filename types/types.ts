@@ -17,8 +17,11 @@ interface IIdea {
   upvotes: Types.ObjectId[] | string[]
   downvotes: Types.ObjectId[] | string[]
   tags: string[]
+  gitLinks?: string[]
+  deployedURLs?: string[]
   approved: Boolean
   rejected: Boolean
+  madeReal?: Boolean
   createdOn: Date
 }
 
