@@ -1,5 +1,16 @@
 import mongoose from 'mongoose'
-import { IComment } from '../types/types'
+import { IComment, IMention } from '../types/types'
+
+const mentionSchema = new mongoose.Schema<IMention>({
+  userName: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  }
+})
 
 const commentSchema = new mongoose.Schema<IComment>({
   ideaId: {
@@ -33,6 +44,12 @@ const commentSchema = new mongoose.Schema<IComment>({
   body: {
     type: String,
     required: true
+  },
+
+  mentions: {
+    type: [mentionSchema],
+    required: false,
+    default: []
   }
 }, {
   versionKey: false

@@ -1,5 +1,13 @@
 import { Types } from 'mongoose'
 
+interface INotification {
+  createdOn: Date
+  body: string
+  source: string
+  notificationType: number
+  read: boolean
+}
+
 interface IUser {
   name: string
   givenName: string
@@ -7,6 +15,7 @@ interface IUser {
   googleId: string
   email: string
   picture: string
+  notifications: INotification[]
 }
 
 interface IIdea {
@@ -26,6 +35,11 @@ interface IIdea {
   createdOn: Date
 }
 
+interface IMention {
+  userName: string
+  userId: Types.ObjectId
+}
+
 interface IComment {
   ideaId: Types.ObjectId | string
   ideaTitle: string
@@ -33,6 +47,7 @@ interface IComment {
   author: Types.ObjectId | string
   authorName: string
   body: string
+  mentions?: IMention[]
 }
 
 interface ITag {
@@ -41,6 +56,8 @@ interface ITag {
 }
 
 export {
+  IMention,
+  INotification,
   IUser,
   IIdea,
   IComment,

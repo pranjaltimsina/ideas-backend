@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 
 import mongoose from 'mongoose'
 
-import { IComment, IIdea } from '../types/types'
+import { IComment, IIdea, IMention } from '../types/types'
 import Comment from '../models/comment'
 import User from '../models/user'
 import Idea from '../models/idea'
@@ -53,12 +53,35 @@ const addComment = async (req: Request, res: Response) => {
   if (parentCommentId === '') {
     // If there is no parent comment id (top level comment)
 
-    const comment: IComment = {
-      authorName: userName,
-      ideaId,
-      ideaTitle,
-      author: userId,
-      body: commentBody
+    // check for mentions
+
+    let mentions: IMention[] = req.body?.mentions || []
+
+    mentions = mentions.map((mention: any) => {
+      return {
+        userId: mention._id,
+        userName: mention.userName
+      }
+    })
+
+    let comment: IComment
+    if (mentions.length === 0) {
+      comment = {
+        authorName: userName,
+        ideaId,
+        ideaTitle,
+        author: userId,
+        body: commentBody
+      }
+    } else {
+      comment = {
+        authorName: userName,
+        ideaId,
+        ideaTitle,
+        author: userId,
+        body: commentBody,
+        mentions
+      }
     }
     try {
       const createdComment = await new Comment(
@@ -82,13 +105,35 @@ const addComment = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Bad request. Parent comment does not exist.' })
     }
 
-    const comment: IComment = {
-      authorName: userName,
-      ideaId,
-      ideaTitle,
-      author: userId,
-      body: commentBody,
-      parentCommentId
+    let mentions: IMention[] = req.body?.mentions || []
+
+    mentions = mentions.map((mention: any) => {
+      return {
+        userId: mention._id,
+        userName: mention.userName
+      }
+    })
+
+    let comment: IComment
+    if (mentions.length === 0) {
+      comment = {
+        authorName: userName,
+        ideaId,
+        ideaTitle,
+        author: userId,
+        body: commentBody,
+        parentCommentId
+      }
+    } else {
+      comment = {
+        authorName: userName,
+        ideaId,
+        ideaTitle,
+        author: userId,
+        body: commentBody,
+        mentions,
+        parentCommentId
+      }
     }
     try {
       const createdComment = await new Comment(
