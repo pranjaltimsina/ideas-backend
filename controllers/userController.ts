@@ -86,10 +86,22 @@ const getUserProfile = async (req: Request, res: Response): Promise<Response> =>
   }
 }
 
+const getNotifications = async (req: Request, res: Response): Promise<Response> => {
+  const authorizationId: string = res.locals.user.id || ''
+
+  try {
+    const notifications = await User.findById(authorizationId).select('notifications').lean()
+    return res.status(200).json({ notifications })
+  } catch {
+    return res.status(500).json({ error: 'Could not fetch notifications.' })
+  }
+}
+
 export {
   getAllUsers,
   getUserComments,
   getUserIdeas,
   getUnapprovedIdeas,
-  getUserProfile
+  getUserProfile,
+  getNotifications
 }
