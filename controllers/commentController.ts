@@ -60,7 +60,7 @@ const addComment = async (req: Request, res: Response) => {
     mentions = mentions.map((mention: any) => {
       return {
         userId: mention._id,
-        userName: mention.userName
+        userName: mention?.userName || mention?.username
       }
     })
 
@@ -110,7 +110,7 @@ const addComment = async (req: Request, res: Response) => {
     mentions = mentions.map((mention: any) => {
       return {
         userId: mention._id,
-        userName: mention.userName
+        userName: mention?.userName || mention?.username
       }
     })
 
@@ -140,7 +140,8 @@ const addComment = async (req: Request, res: Response) => {
         comment
       ).save()
       return res.status(200).json({ message: 'Successfully added comment.', comment: createdComment })
-    } catch {
+    } catch (e) {
+      console.error(e)
       return res.status(500).json({ error: 'Could not create comment.' })
     }
   }
