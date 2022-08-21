@@ -17,8 +17,12 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const user = req.query?.user || '' // filter by user
   const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
   const query = req.query?.query || '' // the search query
-  const trending = req.query?.query || 'false'
-  const madeReal = req.query?.query || 'false'
+  const trending = req.query?.trending || 'false'
+  const madeReal = req.query?.madeReal || 'false'
+  const startDate = req.query?.startDate || '1629523280'
+  const endDate = req.query?.endDate || Date.now()
+
+  console.log({ startDate, endDate })
 
   try {
     if (trending === 'true') {
@@ -26,9 +30,9 @@ const getAllIdeas = async (req: Request, res: Response) => {
     } else if (madeReal === 'true') {
       ideas = await Idea.find({ madeReal: true }).limit(20).populate('author', 'picture').lean()
     } else if (tags.length) {
-      ideas = await Idea.find({ tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate }, tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
     } else {
-      ideas = await Idea.find().skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
     }
   } catch {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
