@@ -21,7 +21,6 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const madeReal = req.query?.madeReal || 'false'
   const startDate = req.query?.startDate || new Date(1629523280 * 1000)
   const endDate = req.query?.endDate || Date.now()
-
   try {
     if (trending === 'true') {
       ideas = await Idea.find().limit(20).populate('author', 'picture').lean()
@@ -35,6 +34,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
   } catch {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
+
   const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal)
   return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }

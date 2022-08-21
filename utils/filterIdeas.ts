@@ -14,7 +14,7 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
   }
 
   if (user !== '') {
-    ideas = { ideas: ideas?.filter((idea: IIdea) => idea.authorName === user) }
+    ideas = ideas?.filter((idea: IIdea) => idea.authorName === user)
   }
 
   let results
