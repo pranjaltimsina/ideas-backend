@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { IComment, IMention } from '../types/types'
 import * as addNotification from '../utils/addNotification'
+import { User } from './user'
 
 const mentionSchema = new mongoose.Schema<IMention>({
   userName: {
@@ -62,6 +63,8 @@ commentSchema.post('save', async (doc: mongoose.Document & IComment) => {
   // and the idea authors inbox
   // if the idea author and the reply'y parent comment's author are the same
   // add the replied to your comment notification only
+
+  await User.findByIdAndUpdate({ _id: doc?.author }, { $inc: { commentCount: 1 } })
 
   if (doc?.parentCommentId) {
     await addNotification.addReplyNotification(doc)

@@ -60,6 +60,16 @@ const userSchema = new Schema<IUser>({
     type: [notificationsSchema],
     required: true,
     default: []
+  },
+  ideaCount: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  commentCount: {
+    type: Number,
+    required: true,
+    default: 0
   }
 }, {
   versionKey: false

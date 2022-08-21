@@ -16,6 +16,8 @@ interface IUser {
   email: string
   picture: string
   notifications: INotification[]
+  ideaCount: number
+  commentCount: number
 }
 
 interface IIdea {

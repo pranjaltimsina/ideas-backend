@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { IIdea } from '../types/types'
 import Tag from './tags'
+import { User } from './user'
 
 const Schema = mongoose.Schema
 
@@ -75,6 +76,7 @@ ideaSchema.post('save', async (doc: mongoose.Document & IIdea) => {
       }
     })
   }
+  await User.findByIdAndUpdate({ _id: doc?.author?._id }, { $inc: { ideaCount: 1 } })
 })
 
 const Idea = mongoose.model('idea', ideaSchema)
