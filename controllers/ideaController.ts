@@ -19,10 +19,8 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const query = req.query?.query || '' // the search query
   const trending = req.query?.trending || 'false'
   const madeReal = req.query?.madeReal || 'false'
-  const startDate = req.query?.startDate || '1629523280'
+  const startDate = req.query?.startDate || new Date(1629523280 * 1000)
   const endDate = req.query?.endDate || Date.now()
-
-  console.log({ startDate, endDate })
 
   try {
     if (trending === 'true') {
@@ -37,9 +35,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
   } catch {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
-
   const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal)
-
   return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
 

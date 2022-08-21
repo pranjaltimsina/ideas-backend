@@ -6,15 +6,15 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
   // user filter
   if (trending === 'true') {
     sortBy = 'upvotes'
-    return ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length < b.upvotes.length)
+    return { ideas: ideas?.sort((a: IIdea, b: IIdea) => a.upvotes.length < b.upvotes.length) }
   }
 
   if (madeReal === 'true') {
-    return ideas
+    return { ideas }
   }
 
   if (user !== '') {
-    ideas = ideas?.filter((idea: IIdea) => idea.authorName === user)
+    ideas = { ideas: ideas?.filter((idea: IIdea) => idea.authorName === user) }
   }
 
   let results
