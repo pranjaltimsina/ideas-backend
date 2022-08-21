@@ -7,16 +7,14 @@ import * as userController from '../controllers/userController'
 
 const router: Router = express.Router()
 
-router.use(jwt)
-
 router.get('/', userController.getAllUsers)
 
-router.get('/:userId/comments', verifyPathParams(['userId']), userController.getUserComments)
+router.get('/:userId/comments', jwt, verifyPathParams(['userId']), userController.getUserComments)
 
-router.get('/:userId/ideas', verifyPathParams(['userId']), userController.getUserIdeas)
+router.get('/:userId/ideas', jwt, verifyPathParams(['userId']), userController.getUserIdeas)
 
-router.get('/:userId', verifyPathParams(['userId']), userController.getUserProfile)
+router.get('/:userId', jwt, verifyPathParams(['userId']), userController.getUserProfile)
 
-router.get('/:userId/ideas/unapproved', verifyPathParams(['userId']), userController.getUnapprovedIdeas)
+router.get('/:userId/ideas/unapproved', jwt, verifyPathParams(['userId']), userController.getUnapprovedIdeas)
 
 export default router
