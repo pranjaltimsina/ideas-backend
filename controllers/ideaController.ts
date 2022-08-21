@@ -1,34 +1,66 @@
 import { Request, Response } from 'express'
 import mongoose from 'mongoose'
+
 import Comment from '../models/comment'
-
 import Idea from '../models/idea'
-import User from '../models/user'
+import { User } from '../models/user'
 import { IIdea } from '../types/types'
+import filterIdeas from '../utils/filterIdeas'
 
-const getAllIdeas = async (_req: Request, res: Response) => {
+const getAllIdeas = async (req: Request, res: Response) => {
+  let ideas
+
+  const offset = req.query?.offset || 0
+  const limit = req.query?.limit || 20
+  const sortBy = req.query?.sortBy || 'date' // date, title, users given name, upvotes
+  const order = req.query?.order || 'asc' // asc, desc
+  const user = req.query?.user || '' // filter by user
+  const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
+  const query = req.query?.query || '' // the search query
+  const trending = req.query?.trending || 'false'
+  const madeReal = req.query?.madeReal || 'false'
+  const startDate = req.query?.startDate || '1629523280'
+  const endDate = req.query?.endDate || Date.now()
+
+  console.log({ startDate, endDate })
+
   try {
-    const ideas = await Idea.find().lean()
-    res.status(200).json({ ideas })
+    if (trending === 'true') {
+      ideas = await Idea.find().limit(20).populate('author', 'picture').lean()
+    } else if (madeReal === 'true') {
+      ideas = await Idea.find({ madeReal: true }).limit(20).populate('author', 'picture').lean()
+    } else if (tags.length) {
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate }, tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+    } else {
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+    }
   } catch {
-    res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
+    return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
+
+  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal)
+
+  return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
 
 const getIdeaById = async (_req: Request, res: Response) => {
   const ideaId = res.locals.ideaId
   try {
-    const idea = await Idea.findById(ideaId).lean()
+    const idea = await Idea.findById(ideaId).populate('author').lean()
 
     const comments = await Comment.find({
       ideaId,
       parentCommentId: { $exists: false }
-    }).lean()
+    }).populate('author', 'name picture').lean()
 
     return res.status(200).json({ idea, comments })
   } catch {
     return res.status(500).json({ error: 'Could not find idea.' })
   }
+}
+
+interface ideaWithComments extends IIdea{
+  comments: Comment[]
 }
 
 const getIdeaByUserId = async (req: Request, res: Response) => {
@@ -41,9 +73,14 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
   const mongoUserId = new mongoose.Types.ObjectId(userId)
 
   try {
-    const ideas = await Idea.find({
+    let ideas: ideaWithComments[] = await Idea.find({
       author: mongoUserId
-    }).lean()
+    }).populate('author', 'name picture').lean()
+
+    ideas = await Promise.all(ideas.map(async (idea) => {
+      idea.comments = await Comment.find({ ideaId: idea._id })
+      return idea
+    }))
 
     return res.status(200).json({ ideas })
   } catch {
@@ -65,11 +102,18 @@ const createIdea = async (req: Request, res: Response) => {
   const userId: string = res.locals.user.id || ''
   const userName: string = res.locals.user.name || ''
 
-  const user = await User.exists({ _id: userId })
+  let user
+
+  try {
+    user = await User.exists({ _id: userId })
+  } catch {
+    return res.status(500).json({ error: 'Internal error, could not verify user.' })
+  }
 
   if (user === null) {
     return res.status(404).json({ error: 'Unauthorized. User Does not exist.' })
   }
+
   try {
     const idea: reqIdea = req.body.idea
 
@@ -160,7 +204,8 @@ const editIdea = async (req: Request, res: Response) => {
           title: idea.title,
           description: idea.description,
           downvotes: idea.downvotes,
-          upvotes: idea.upvotes
+          upvotes: idea.upvotes,
+          tags: idea.tags
         }
       })
 
@@ -195,6 +240,7 @@ const deleteIdea = async (req: Request, res: Response) => {
     if (theIdea.author.equals(userId)) {
       try {
         await Idea.deleteOne({ _id: ideaId })
+        await Comment.deleteMany({ ideaId })
         return res.status(200).json({ message: 'Deleted Idea' })
       } catch {
         return res.status(500).json({ error: 'Could not delete Idea.' })

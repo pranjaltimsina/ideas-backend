@@ -4,6 +4,7 @@ import { exit } from 'process'
 
 import { app } from './app'
 import connectDB from './config/mongo.config'
+// import addPostCount from './scripts/addPostcount'
 
 dotenv.config({ path: './.env' })
 
@@ -19,6 +20,8 @@ if (MONGO_URI === '') {
 }
 
 connectDB(MONGO_URI)
+
+// addPostCount()
 
 const server = http.createServer(app)
 

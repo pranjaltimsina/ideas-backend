@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import verifyGoogleUser from '../middlewares/ticket'
 
-import User from '../models/user'
+import { User } from '../models/user'
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'shhh'
 
@@ -36,12 +36,11 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         if (saveErr) {
           res.status(502).json({ error: 'Could not create user' })
         } else {
-          // console.log(JSON.stringify(savedUser._id).slice(1, -1))
           const newToken: string = jwt.sign({
             id: JSON.stringify(savedUser._id).slice(1, -1),
             name: savedUser.name
           }, JWT_SECRET, {
-            expiresIn: '1d'
+            expiresIn: '30d'
           })
           return res.status(201).json({
             data: savedUser,
@@ -50,12 +49,11 @@ router.post('/google', verifyGoogleUser, async (req: Request, res: Response) => 
         }
       })
     } else {
-      // console.log(JSON.stringify(currentUser._id).slice(1, -1))
       const newToken: string = jwt.sign({
         id: JSON.stringify(currentUser._id).slice(1, -1),
         name: currentUser.name
       }, JWT_SECRET, {
-        expiresIn: '1d'
+        expiresIn: '30d'
       })
       return res.status(200).json({ data: currentUser, token: newToken })
     }

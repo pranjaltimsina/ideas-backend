@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 import { IIdea } from '../types/types'
+import Tag from './tags'
+import { User } from './user'
 
 const Schema = mongoose.Schema
 
@@ -31,6 +33,16 @@ const ideaSchema = new Schema<IIdea>({
 
   tags: [String],
 
+  gitLinks: {
+    type: [String],
+    required: false
+  },
+
+  deployedURLs: {
+    type: [String],
+    required: false
+  },
+
   approved: {
     type: Boolean,
     required: true
@@ -41,9 +53,30 @@ const ideaSchema = new Schema<IIdea>({
     required: true
   },
 
+  madeReal: {
+    type: Boolean,
+    required: false
+  },
+
   createdOn: Date
 }, {
   versionKey: false
+})
+
+ideaSchema.post('save', async (doc: mongoose.Document & IIdea) => {
+  if (doc?.tags.length) {
+    doc?.tags.forEach(async tag => {
+      if (!(await Tag.exists({ tag }))) {
+        try {
+          await new Tag({ tag }
+          ).save()
+        } catch {
+          console.error(`Could not save tag ${tag}`)
+        }
+      }
+    })
+  }
+  await User.findByIdAndUpdate({ _id: doc?.author?._id }, { $inc: { ideaCount: 1 } })
 })
 
 const Idea = mongoose.model('idea', ideaSchema)

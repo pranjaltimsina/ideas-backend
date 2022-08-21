@@ -1,7 +1,35 @@
 import mongoose from 'mongoose'
-import { IUser } from '../types/types'
+import { IUser, INotification } from '../types/types'
 
 const Schema = mongoose.Schema
+
+const notificationsSchema = new Schema<INotification>({
+  createdOn: {
+    type: Date,
+    required: true
+  },
+
+  body: {
+    type: String,
+    required: true
+  },
+
+  source: {
+    type: String,
+    required: true
+  },
+
+  notificationType: {
+    type: Number,
+    required: true
+  },
+
+  read: {
+    type: Boolean,
+    required: true,
+    default: false
+  }
+})
 
 const userSchema = new Schema<IUser>({
   name: {
@@ -27,6 +55,21 @@ const userSchema = new Schema<IUser>({
   picture: {
     type: String,
     required: true
+  },
+  notifications: {
+    type: [notificationsSchema],
+    required: true,
+    default: []
+  },
+  ideaCount: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  commentCount: {
+    type: Number,
+    required: true,
+    default: 0
   }
 }, {
   versionKey: false
@@ -34,4 +77,4 @@ const userSchema = new Schema<IUser>({
 
 const User = mongoose.model('user', userSchema)
 
-export default User
+export { User, notificationsSchema }

@@ -25,6 +25,7 @@
     "express": "^4.18.1",
     "express-rate-limit": "^6.4.0",
     "express-validator": "^6.14.1",
+    "fuzzysort": "^2.0.1",
     "google-auth-library": "^8.0.2",
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
