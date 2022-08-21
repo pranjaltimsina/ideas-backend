@@ -2,7 +2,7 @@ import { IIdea } from '../types/types'
 
 import fuzzysort from 'fuzzysort'
 
-const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, query: any, trending: any, madeReal: any) => {
+const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, query: any, trending: any, madeReal: any, offset: any, limit: any) => {
   // user filter
   if (trending === 'true') {
     sortBy = 'upvotes'
@@ -24,6 +24,8 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
       .map((res) => {
         return { idea: res.obj, score: res.score }
       })
+    ideas = ideas?.slice(offset, limit)
+    console.log(ideas.length)
   }
 
   switch (sortBy) {
