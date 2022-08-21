@@ -74,7 +74,7 @@ const getIdeaByUserId = async (req: Request, res: Response) => {
     }).populate('author', 'name picture').lean()
 
     ideas = await Promise.all(ideas.map(async (idea) => {
-      idea.comments = await Comment.find({ ideaId: idea._id })
+      idea.comments = await Comment.find({ ideaId: idea._id }).populate('author', '_id name picture')
       return idea
     }))
 
