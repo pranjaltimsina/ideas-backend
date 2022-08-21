@@ -4,6 +4,8 @@ import auth from './auth'
 import ideas from './ideas'
 import user from './user'
 import admin from './admin'
+import verifyJWT from '../middlewares/jwt'
+import { getNotifications } from '../controllers/userController'
 
 const router: Router = express.Router()
 
@@ -18,5 +20,6 @@ router.use('/auth', auth)
 router.use('/ideas', ideas)
 router.use('/user', user)
 router.use('/admin', admin)
+router.use('/notifications', verifyJWT, getNotifications)
 
 export default router

@@ -11,7 +11,7 @@ const connectDB = async (MONGO_URI: string) => {
     }
   } catch (err) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('Failed to connect to MongoDB', err)
+      console.error('Failed to connect to MongoDB', err)
     }
   }
 }

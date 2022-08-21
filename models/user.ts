@@ -67,4 +67,4 @@ const userSchema = new Schema<IUser>({
 
 const User = mongoose.model('user', userSchema)
 
-export default User
+export { User, notificationsSchema }

@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 
 import Comment from '../models/comment'
 import Idea from '../models/idea'
-import User from '../models/user'
+import { User } from '../models/user'
 import { IIdea } from '../types/types'
 import filterIdeas from '../utils/filterIdeas'
 
@@ -20,8 +20,6 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const trending = req.query?.query || 'false'
   const madeReal = req.query?.query || 'false'
 
-  // console.log({ sortBy, order, user, tags, query, trending, madeReal })
-  // console.log((tags as string).split(','))
   try {
     if (trending === 'true') {
       ideas = await Idea.find().limit(20).populate('author', 'picture').lean()

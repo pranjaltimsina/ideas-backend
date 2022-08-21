@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 
 import { IComment, IIdea, IMention } from '../types/types'
 import Comment from '../models/comment'
-import User from '../models/user'
+import { User } from '../models/user'
 import Idea from '../models/idea'
 
 const getReplies = async (req: Request, res: Response) => {

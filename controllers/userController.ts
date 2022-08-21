@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import Comment from '../models/comment'
 import Idea from '../models/idea'
 import Tag from '../models/tags'
-import User from '../models/user'
+import { User } from '../models/user'
 
 const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
   try {

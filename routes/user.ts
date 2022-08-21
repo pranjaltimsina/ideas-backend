@@ -19,6 +19,4 @@ router.get('/:userId', verifyPathParams(['userId']), userController.getUserProfi
 
 router.get('/:userId/ideas/unapproved', verifyPathParams(['userId']), userController.getUnapprovedIdeas)
 
-router.get('/notifications', userController.getNotifications)
-
 export default router
