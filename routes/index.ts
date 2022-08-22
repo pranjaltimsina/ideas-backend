@@ -5,7 +5,8 @@ import ideas from './ideas'
 import user from './user'
 import admin from './admin'
 import verifyJWT from '../middlewares/jwt'
-import { getNotifications } from '../controllers/userController'
+import { getNotifications, readNotification } from '../controllers/userController'
+import verifyPathParams from '../middlewares/verifyPathParams'
 
 const router: Router = express.Router()
 
@@ -20,6 +21,7 @@ router.use('/auth', auth)
 router.use('/ideas', ideas)
 router.use('/user', user)
 router.use('/admin', admin)
-router.use('/notifications', verifyJWT, getNotifications)
+router.get('/notifications', verifyJWT, getNotifications)
+router.post('/notifications/:notificationId', verifyJWT, verifyPathParams(['notificationId']), readNotification)
 
 export default router

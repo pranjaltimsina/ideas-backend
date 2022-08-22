@@ -1,10 +1,12 @@
 import { Types } from 'mongoose'
 
 interface INotification {
-  createdOn: Date
-  body: string
-  source: string
-  notificationType: number
+  createdOn: Number
+  body: String
+  source: Types.ObjectId
+  parentIdeaId: Types.ObjectId | string | undefined
+  sourceBody: String
+  notificationType: Number
   read: boolean
 }
 

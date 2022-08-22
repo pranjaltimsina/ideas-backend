@@ -14,8 +14,18 @@ const notificationsSchema = new Schema<INotification>({
     required: true
   },
 
-  source: {
+  parentIdeaId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+
+  sourceBody: {
     type: String,
+    required: true
+  },
+
+  source: {
+    type: mongoose.Schema.Types.ObjectId,
     required: true
   },
 
