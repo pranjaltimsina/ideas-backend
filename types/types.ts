@@ -5,6 +5,12 @@ interface INotification {
   body: String
   source: Types.ObjectId
   parentIdeaId: Types.ObjectId | string | undefined
+  parentIdeaTitle: string
+  parentIdeaAuthorId: Types.ObjectId | string | undefined
+  parentIdeaAuthorName: string
+  commentAuthorId: Types.ObjectId | string | undefined
+  commentAuthorName: string
+  commentAuthorPicture: string | undefined
   sourceBody: String
   notificationType: Number
   read: boolean

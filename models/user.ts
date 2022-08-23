@@ -19,6 +19,36 @@ const notificationsSchema = new Schema<INotification>({
     required: true
   },
 
+  parentIdeaTitle: {
+    type: String,
+    required: true
+  },
+
+  parentIdeaAuthorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+
+  parentIdeaAuthorName: {
+    type: String,
+    required: true
+  },
+
+  commentAuthorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+
+  commentAuthorName: {
+    type: String,
+    required: true
+  },
+
+  commentAuthorPicture: {
+    type: String,
+    required: true
+  },
+
   sourceBody: {
     type: String,
     required: true
