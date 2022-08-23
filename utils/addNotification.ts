@@ -15,7 +15,7 @@ const addMention = async (doc: IComment & mongoose.Document, mentionType: string
       ideaAuthor?.author?.name,
       doc?.author,
       doc?.authorName,
-      ideaAuthor?.author?.picture,
+      commentAuthor?.picture,
       doc?.body,
       mention?.userId,
       `${doc?.authorName} mentioned you in a ${mentionType}.`,
