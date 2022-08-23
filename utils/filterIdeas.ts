@@ -24,8 +24,9 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
       .map((res) => {
         return { idea: res.obj, score: res.score }
       })
+    results = results.filter(a => a.score > -500)
+    results = results.sort((a, b) => b.score - a.score)
     ideas = ideas?.slice(offset, limit)
-    console.log(ideas.length)
   }
 
   switch (sortBy) {

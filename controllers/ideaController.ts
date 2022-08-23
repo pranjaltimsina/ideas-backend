@@ -15,7 +15,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
   const user = req.query?.user || '' // filter by user
   const tags = req.query?.tags || '' // comma separated tags (?tags=tag1,tag2,tag3)`
   const query = req.query?.query || '' // the search query
-  const realOoffset = req.query?.offset || 0
+  const realOffset = req.query?.offset || 0
   const realLimit = req.query?.limit || 20
   let offset = req.query?.offset || 0
   let limit = req.query?.limit || 20
@@ -42,7 +42,7 @@ const getAllIdeas = async (req: Request, res: Response) => {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
   }
 
-  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal, realOoffset, realLimit)
+  const filtered = filterIdeas(ideas, sortBy, order, user, tags, query, trending, madeReal, realOffset, realLimit)
   return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
 
