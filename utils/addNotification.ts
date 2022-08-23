@@ -23,6 +23,7 @@ const addReplyNotification = async (doc: IComment & mongoose.Document) => {
   await addMention(doc, 'reply')
   const ideaAuthor = await Idea.findById(doc.ideaId).select('author').lean()
   await addNotification(doc?.ideaId, doc?.body, ideaAuthor?._id, `${doc.authorName} replied to a comment in your idea.`, doc._id, 1)
+
   const parentCommentAuthor = await Comment.findById(doc?.parentCommentId).select('author').lean()
   await addNotification(doc?.ideaId, doc?.body, parentCommentAuthor?._id, `${doc.authorName} replied to your comment.`, doc._id, 1)
 }
