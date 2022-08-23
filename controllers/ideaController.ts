@@ -34,9 +34,9 @@ const getAllIdeas = async (req: Request, res: Response) => {
     } else if (madeReal === 'true') {
       ideas = await Idea.find({ madeReal: true }).limit(20).populate('author', 'picture').lean()
     } else if (tags.length) {
-      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate }, tags: { $all: (tags as string).split(',') } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate }, tags: { $all: (tags as string).split(',') } }).sort('1').skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
     } else {
-      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate } }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
+      ideas = await Idea.find({ createdOn: { $gte: startDate, $lte: endDate } }).sort({ createdOn: -1 }).skip(offset as number).limit(limit as number).populate('author', 'picture').lean()
     }
   } catch {
     return res.status(502).json({ error: 'Could not retrieve ideas from the database.' })
