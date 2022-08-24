@@ -20,7 +20,7 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
   let results
   // search query fuzzy matching
   if (query !== '') {
-    results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName', 'createdOn'] })
+    results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName'] })
       .map((res) => {
         return { idea: res.obj, score: res.score }
       })
