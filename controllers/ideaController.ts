@@ -46,17 +46,25 @@ const getAllIdeas = async (req: Request, res: Response) => {
   return res.status(200).json({ ideas: filtered?.ideas, searchResults: filtered?.matches })
 }
 
-const getIdeaById = async (_req: Request, res: Response) => {
+const getIdeaById = async (req: Request, res: Response) => {
   const ideaId = res.locals.ideaId
+
+  const editing = req.query?.edit || 'false'
+
   try {
-    const idea = await Idea.findById(ideaId).populate('author').lean()
+    let idea
+    if (editing === 'true') {
+      idea = await Idea.findById(ideaId).lean()
+      return res.status(200).json({ idea })
+    } else {
+      idea = await Idea.findById(ideaId).populate('author').lean()
+      const comments = await Comment.find({
+        ideaId,
+        parentCommentId: { $exists: false }
+      }).populate('author', 'name picture').lean()
 
-    const comments = await Comment.find({
-      ideaId,
-      parentCommentId: { $exists: false }
-    }).populate('author', 'name picture').lean()
-
-    return res.status(200).json({ idea, comments })
+      return res.status(200).json({ idea, comments })
+    }
   } catch {
     return res.status(500).json({ error: 'Could not find idea.' })
   }

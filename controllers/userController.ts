@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 import Comment from '../models/comment'
 import Idea from '../models/idea'
 import Tag from '../models/tags'
-import { validate as validateUUID, version as uuidVersion } from 'uuid'
 import { User } from '../models/user'
 
 const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
