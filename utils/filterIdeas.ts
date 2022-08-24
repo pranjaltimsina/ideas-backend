@@ -18,6 +18,8 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
   }
 
   let results
+
+  query = query.trim()
   // search query fuzzy matching
   if (query !== '') {
     results = fuzzysort.go(query, ideas, { keys: ['title', 'description', 'authorName'] })
@@ -34,6 +36,7 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
         score: 0
       }
     })
+    console.log(results)
   }
 
   switch (sortBy) {
