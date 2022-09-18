@@ -116,6 +116,29 @@ const readNotification = async (req: Request, res: Response): Promise<Response> 
   }
 }
 
+const clearNotification = async (req: Request, res: Response): Promise<Response> => {
+  const userId: string = res.locals.user.id || ''
+  const notificationId = res.locals?.notificationId || ''
+
+  try {
+    User.updateOne({ _id: userId }, { $pull: { notifications: { _id: notificationId } } })
+    return res.status(200).json({ message: 'Successfully cleared notification.' })
+  } catch (e) {
+    return res.status(500).json({ error: 'Internal Server Error.' })
+  }
+}
+
+const clearAllNotifications = async (req: Request, res: Response): Promise<Response> => {
+  const userId: string = res.locals.user.id || ''
+
+  try {
+    await User.updateOne({ _id: userId }, { $set: { notifications: [] } })
+    return res.status(200).json({ message: 'Successfully cleared all notifications' })
+  } catch {
+    return res.status(500).json({ error: 'Internal Server Error.' })
+  }
+}
+
 export {
   getAllUsers,
   getUserComments,
@@ -123,5 +146,7 @@ export {
   getUnapprovedIdeas,
   getUserProfile,
   getNotifications,
-  readNotification
+  readNotification,
+  clearNotification,
+  clearAllNotifications
 }
