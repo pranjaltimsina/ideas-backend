@@ -25,8 +25,25 @@ const getAllIdeas = async (req: Request, res: Response) => {
   }
   const trending = req.query?.trending || 'false'
   const madeReal = req.query?.madeReal || 'false'
-  const startDate = req.query?.startDate || new Date(1629523280 * 1000)
-  const endDate = req.query?.endDate || Date.now()
+
+  let startDate
+  try {
+    startDate = req.query?.startDate || new Date(1629523280 * 1000)
+    startDate = new Date(startDate as string)
+  } catch {
+    return res.status(400).json({ error: 'Bad request, invalid start date.' })
+  }
+
+  let endDate
+  try {
+    endDate = req.query?.endDate || Date.now()
+    endDate = new Date(endDate as string)
+    endDate = endDate.setDate(endDate.getDate() + 1)
+  } catch {
+    return res.status(400).json({ error: 'Bad request, invalid end date.' })
+  }
+
+  console.log(endDate.toString())
 
   try {
     if (trending === 'true') {

@@ -36,7 +36,6 @@ const filterIdeas = (ideas: any, sortBy: any, order: any, user: any, tags: any, 
         score: 0
       }
     })
-    console.log(results)
   }
 
   switch (sortBy) {
